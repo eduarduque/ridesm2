@@ -31,10 +31,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
-      <body className="h-full bg-white text-gray-900 font-sans">
+      <body className="h-full bg-background text-foreground font-sans antialiased">
         <ServiceWorkerRegistrar />
         <DisclaimerModal />
-        <main className="pb-16 min-h-full">{children}</main>
+        <main className="pb-24 min-h-full">{children}</main>
         <BottomNav />
       </body>
     </html>

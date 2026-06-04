@@ -11,6 +11,8 @@ interface Props {
   onTimeChange: (v: string) => void
   luggageFilter: boolean
   onLuggageChange: (v: boolean) => void
+  commutesFilter: boolean
+  onCommutesChange: (v: boolean) => void
 }
 
 function Chip({
@@ -26,15 +28,17 @@ function Chip({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
-      className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+      data-active={active}
+      className={`chip-glow shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
         active
           ? urgent
-            ? 'bg-orange-500 text-white'
+            ? 'bg-urgent text-white'
             : 'bg-brand text-white'
           : urgent
-          ? 'bg-orange-50 text-orange-600 hover:bg-orange-100'
-          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          ? 'bg-urgent-light text-urgent hover:bg-orange-100'
+          : 'bg-white/80 text-slate-600 border border-slate-200/90 hover:border-slate-300 hover:bg-white'
       }`}
     >
       {label}
@@ -47,11 +51,11 @@ export default function FilterChips({
   typeFilter, onTypeChange,
   timeFilter, onTimeChange,
   luggageFilter, onLuggageChange,
+  commutesFilter, onCommutesChange,
 }: Props) {
   return (
-    <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
-      {/* Route filters */}
-      <div className="flex gap-2 overflow-x-auto px-4 pt-3 pb-1 no-scrollbar">
+    <div className="sticky top-0 z-10 backdrop-blur-md bg-white/85 border-b border-slate-200/60 shadow-sm">
+      <div className="flex gap-2 overflow-x-auto px-4 pt-3 pb-1.5 no-scrollbar">
         <Chip label="All routes" active={routeFilter === 'all'} onClick={() => onRouteChange('all')} />
         {POPULAR_ROUTES.map((r) => (
           <Chip
@@ -63,17 +67,20 @@ export default function FilterChips({
         ))}
       </div>
 
-      {/* Type + time + special filters */}
       <div className="flex gap-2 overflow-x-auto px-4 pb-3 pt-1 no-scrollbar">
-        <Chip label="All" active={typeFilter === 'all'} onClick={() => onTypeChange('all')} />
+        <Chip label="All" active={typeFilter === 'all' && !luggageFilter && !commutesFilter && timeFilter === 'all'} onClick={() => {
+          onTypeChange('all')
+          onTimeChange('all')
+          onLuggageChange(false)
+          onCommutesChange(false)
+        }} />
         <Chip label="Offers" active={typeFilter === 'offer'} onClick={() => onTypeChange('offer')} />
         <Chip label="Requests" active={typeFilter === 'request'} onClick={() => onTypeChange('request')} />
-        <Chip label="🧳 Luggage" active={luggageFilter} onClick={() => onLuggageChange(!luggageFilter)} />
-        <span className="w-px bg-gray-200 self-stretch mx-1" />
-        <Chip label="🔥 Urgent" active={timeFilter === 'urgent'} onClick={() => onTimeChange('urgent')} urgent />
+        <Chip label="Urgent ASAP" active={timeFilter === 'urgent'} onClick={() => onTimeChange('urgent')} urgent />
         <Chip label="Today" active={timeFilter === 'today'} onClick={() => onTimeChange('today')} />
         <Chip label="Tomorrow" active={timeFilter === 'tomorrow'} onClick={() => onTimeChange('tomorrow')} />
-        <Chip label="All dates" active={timeFilter === 'all'} onClick={() => onTimeChange('all')} />
+        <Chip label="Daily commutes" active={commutesFilter} onClick={() => onCommutesChange(!commutesFilter)} />
+        <Chip label="Luggage only" active={luggageFilter} onClick={() => onLuggageChange(!luggageFilter)} />
       </div>
     </div>
   )
