@@ -107,54 +107,58 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
   const openCount = visible.length
 
   return (
-    <div className="flex flex-col min-h-screen feed-mesh">
-      <header className="px-4 pt-5 pb-3 bg-white/70 backdrop-blur-sm border-b border-slate-200/50">
-        <div className="flex items-end justify-between gap-3">
+    <div className="flex flex-col min-h-screen bg-neutral-50">
+      <header className="bg-white border-b border-neutral-200/50">
+        <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Ride<span className="text-brand">SM</span>
+            <h1 className="text-xl font-extrabold tracking-tight text-brand">
+              RideSM
             </h1>
-            <p className="text-xs text-slate-500 mt-0.5 font-medium">
-              SM · Austin · Dallas corridor
+            <p className="text-[10px] text-neutral-500 font-semibold mt-0.5">
+              Community Carpool Board
             </p>
           </div>
           {openCount > 0 && (
-            <span className="shrink-0 text-[11px] font-semibold text-brand bg-brand-light px-2.5 py-1 rounded-full">
-              {openCount} live
+            <span className="shrink-0 text-[9px] font-black text-white bg-brand px-2.5 py-1 rounded-full uppercase tracking-wider">
+              {openCount} active
             </span>
           )}
         </div>
       </header>
 
-      <FilterChips
-        routeFilter={routeFilter}
-        onRouteChange={setRouteFilter}
-        typeFilter={typeFilter}
-        onTypeChange={setTypeFilter}
-        timeFilter={timeFilter}
-        onTimeChange={setTimeFilter}
-        luggageFilter={luggageFilter}
-        onLuggageChange={setLuggageFilter}
-        commutesFilter={commutesFilter}
-        onCommutesChange={setCommutesFilter}
-      />
+      <div className="max-w-md w-full mx-auto">
+        <FilterChips
+          routeFilter={routeFilter}
+          onRouteChange={setRouteFilter}
+          typeFilter={typeFilter}
+          onTypeChange={setTypeFilter}
+          timeFilter={timeFilter}
+          onTimeChange={setTimeFilter}
+          luggageFilter={luggageFilter}
+          onLuggageChange={setLuggageFilter}
+          commutesFilter={commutesFilter}
+          onCommutesChange={setCommutesFilter}
+        />
+      </div>
 
       {error && (
-        <div className="mx-4 mt-3 p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100">
-          {error}
+        <div className="max-w-md mx-auto w-full px-4 mt-3">
+          <div className="p-3 bg-red-50 text-red-600 text-xs font-semibold rounded-lg border border-red-100">
+            {error}
+          </div>
         </div>
       )}
 
       {visible.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center gap-3 text-slate-400 pb-24 px-6">
-          <div className="w-16 h-16 rounded-2xl bg-white card-lift flex items-center justify-center text-3xl">
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 text-neutral-400 pb-24 px-6 mt-10">
+          <div className="w-16 h-16 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-3xl shadow-sm">
             🚗
           </div>
-          <p className="text-sm font-medium text-slate-600">No rides match your filters</p>
-          <p className="text-xs text-center">Be the first — tap + to post a ride</p>
+          <p className="text-sm font-semibold text-neutral-700">No rides match your filters</p>
+          <p className="text-xs text-neutral-400">Be the first — tap Post to share a ride</p>
         </div>
       ) : (
-        <div className="px-3 py-3 grid grid-cols-2 gap-2.5 pb-28 sm:px-4 sm:gap-3">
+        <div className="px-4 py-4 flex flex-col gap-3.5 pb-32 max-w-md mx-auto w-full">
           {visible.map((ride) => (
             <RideCard
               key={ride.id}
@@ -167,9 +171,11 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
         </div>
       )}
 
-      <p className="text-center text-[10px] text-slate-400 px-6 py-3 pb-8">
-        RideSM is a free community board. Not affiliated with TXST. Use at your own risk.
-      </p>
+      <div className="max-w-md mx-auto w-full pb-8">
+        <p className="text-center text-[10px] text-neutral-400 px-6">
+          RideSM is a free community board. Not affiliated with any organization. Use at your own risk.
+        </p>
+      </div>
     </div>
   )
 }

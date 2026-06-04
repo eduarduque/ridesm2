@@ -66,30 +66,30 @@ export default function LoginPage() {
     : `${cooldown}s`
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-white">
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-white max-w-md mx-auto w-full border-x border-neutral-100">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-brand">RideSM</h1>
-          <p className="text-gray-400 text-sm mt-1">Community carpool for San Marcos</p>
+          <h1 className="text-3xl font-extrabold text-brand tracking-tight">RideSM</h1>
+          <p className="text-neutral-400 text-xs font-semibold mt-1">Community Carpool Board</p>
         </div>
 
         {sent ? (
           <div className="text-center">
             <p className="text-4xl mb-4">📬</p>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Check your email</h2>
-            <p className="text-sm text-gray-500 mb-6">
+            <h2 className="text-lg font-bold text-neutral-900 mb-2">Check your email</h2>
+            <p className="text-sm text-neutral-500 mb-6 leading-relaxed">
               We sent a magic link to <strong>{email}</strong>. Tap it to sign in — no password needed.
             </p>
             <button
               onClick={() => { setSent(false); setEmail('') }}
-              className="text-brand text-sm font-medium"
+              className="text-brand font-bold text-sm hover:underline cursor-pointer"
             >
               Use a different email
             </button>
           </div>
         ) : (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-neutral-800 mb-2">
               Email address
             </label>
             <input
@@ -98,10 +98,10 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && !cooldown) sendMagicLink() }}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-base mb-4 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+              className="w-full border border-neutral-300 rounded-lg px-4 py-3 text-base mb-4 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
               autoComplete="email"
             />
-            {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+            {error && <p className="text-red-500 text-sm mb-4 font-medium">{error}</p>}
             {cooldown > 0 && (
               <p className="text-amber-600 text-sm mb-4 text-center">
                 Too many attempts — try again in <strong>{cooldownLabel}</strong>
@@ -110,18 +110,18 @@ export default function LoginPage() {
             <button
               onClick={sendMagicLink}
               disabled={loading || !email.trim() || cooldown > 0}
-              className="w-full bg-brand text-white font-semibold py-3 rounded-xl disabled:opacity-50"
+              className="w-full bg-brand text-white font-bold py-3.5 rounded-lg disabled:opacity-50 hover:bg-brand-dark transition-colors cursor-pointer"
             >
               {loading ? 'Sending…' : cooldown > 0 ? `Wait ${cooldownLabel}` : 'Send magic link'}
             </button>
-            <p className="text-center text-xs text-gray-400 mt-4">
+            <p className="text-center text-xs text-neutral-400 mt-4 font-medium">
               We'll email you a link — no password needed.
             </p>
           </div>
         )}
 
-        <p className="text-center text-xs text-gray-300 mt-8">
-          Not affiliated with TXST. Use at your own risk.
+        <p className="text-center text-[10px] text-neutral-300 mt-12 font-medium">
+          Not affiliated with any organization. Use at your own risk.
         </p>
       </div>
     </div>

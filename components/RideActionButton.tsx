@@ -20,6 +20,7 @@ export default function RideActionButton({ ride, userId, hasRequested: initialHa
 
   const isOwn = ride.user_id === userId
   const canAct = !isOwn && (ride.status === 'open' || ride.status === 'filling')
+  const isOffer = ride.type === 'offer'
 
   async function handleRequest() {
     if (!userId) { router.push('/login'); return }
@@ -42,16 +43,18 @@ export default function RideActionButton({ ride, userId, hasRequested: initialHa
     return (
       <Link
         href="/login"
-        className="block w-full text-center bg-brand text-white font-semibold py-4 rounded-xl"
+        className={`block w-full text-center text-white font-bold py-4 rounded-lg transition-colors cursor-pointer ${
+          isOffer ? 'bg-brand hover:bg-brand-dark' : 'bg-accent hover:bg-teal-700'
+        }`}
       >
-        Sign in to request
+        Sign in to respond
       </Link>
     )
   }
 
   if (isOwn) {
     return (
-      <div className="w-full text-center py-4 bg-gray-100 text-gray-500 text-sm font-medium rounded-xl">
+      <div className="w-full text-center py-4 bg-neutral-100 text-neutral-500 text-sm font-semibold rounded-lg">
         This is your ride
       </div>
     )
@@ -59,7 +62,7 @@ export default function RideActionButton({ ride, userId, hasRequested: initialHa
 
   if (hasRequested) {
     return (
-      <div className="w-full text-center py-4 bg-green-100 text-green-700 text-sm font-medium rounded-xl">
+      <div className="w-full text-center py-4 bg-emerald-50 text-emerald-800 text-sm font-bold rounded-lg border border-emerald-200">
         ✓ Request sent — wait for the driver to accept
       </div>
     )
@@ -67,7 +70,7 @@ export default function RideActionButton({ ride, userId, hasRequested: initialHa
 
   if (!canAct) {
     return (
-      <div className="w-full text-center py-4 bg-gray-100 text-gray-500 text-sm font-medium rounded-xl">
+      <div className="w-full text-center py-4 bg-neutral-100 text-neutral-400 text-sm font-semibold rounded-lg">
         Ride is {ride.status}
       </div>
     )
@@ -78,15 +81,17 @@ export default function RideActionButton({ ride, userId, hasRequested: initialHa
       <button
         onClick={handleRequest}
         disabled={loading}
-        className="w-full bg-brand text-white font-semibold py-4 rounded-xl hover:bg-brand-dark transition-colors disabled:opacity-50"
+        className={`w-full text-white font-bold py-4 rounded-lg transition-colors disabled:opacity-50 cursor-pointer ${
+          isOffer ? 'bg-brand hover:bg-brand-dark' : 'bg-accent hover:bg-teal-700'
+        }`}
       >
         {loading
           ? 'Sending…'
-          : ride.type === 'offer'
+          : isOffer
           ? 'Request seat'
           : 'I can take you'}
       </button>
-      {error && <p className="text-red-500 text-sm mt-2 text-center">{error}</p>}
+      {error && <p className="text-red-500 text-sm mt-2 text-center font-semibold">{error}</p>}
     </>
   )
 }

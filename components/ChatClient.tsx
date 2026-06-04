@@ -81,19 +81,19 @@ export default function ChatClient({ rideId, otherUser, currentUserId, initialMe
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen max-w-md mx-auto w-full border-x border-neutral-100 bg-white">
       {/* Header */}
-      <div className="px-4 pt-6 pb-3 border-b border-gray-100 bg-white">
-        <p className="text-xs text-gray-400 mb-0.5">{rideLabel}</p>
-        <h1 className="font-semibold text-gray-900">{otherUser.name ?? 'Anonymous'}</h1>
+      <div className="px-4 pt-6 pb-3.5 border-b border-neutral-100 bg-white">
+        <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider mb-1">{rideLabel}</p>
+        <h1 className="font-bold text-neutral-900 text-[15px]">{otherUser.name ?? 'Anonymous'}</h1>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 pb-2">
+      <div className="flex-1 overflow-y-auto px-4 py-4 pb-2 bg-neutral-50/30">
         {messages.length === 0 && (
-          <div className="text-center text-gray-400 text-sm mt-8">
+          <div className="text-center text-neutral-400 text-xs font-semibold mt-12">
             <p>No messages yet.</p>
-            <p className="text-xs mt-1">Say hi to coordinate your ride!</p>
+            <p className="text-neutral-400 font-normal mt-1">Say hello to coordinate details!</p>
           </div>
         )}
         {messages.map((msg) => (
@@ -103,19 +103,19 @@ export default function ChatClient({ rideId, otherUser, currentUserId, initialMe
       </div>
 
       {/* Input */}
-      <div className="px-4 py-3 border-t border-gray-100 bg-white flex gap-2 pb-20">
+      <div className="px-4 py-3 border-t border-neutral-100 bg-white flex gap-2 pb-6">
         <input
           type="text"
           value={body}
           onChange={(e) => setBody(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
           placeholder="Message…"
-          className="flex-1 border border-gray-200 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+          className="flex-1 border border-neutral-200 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent bg-white"
         />
         <button
           onClick={send}
           disabled={!body.trim() || sending}
-          className="w-10 h-10 rounded-full bg-brand text-white flex items-center justify-center disabled:opacity-40"
+          className="w-10 h-10 rounded-full bg-brand text-white flex items-center justify-center disabled:opacity-30 hover:bg-brand-dark transition-colors cursor-pointer shrink-0"
         >
           <svg className="w-4 h-4 rotate-90" fill="currentColor" viewBox="0 0 24 24">
             <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />

@@ -12,16 +12,16 @@ export default function ChatBubble({ message, isMe }: Props) {
   })
 
   return (
-    <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-2`}>
+    <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-2.5`}>
       <div
-        className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm ${
+        className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
           isMe
-            ? 'bg-brand text-white rounded-br-sm'
-            : 'bg-gray-100 text-gray-900 rounded-bl-sm'
+            ? 'bg-brand text-white rounded-tr-none shadow-sm'
+            : 'bg-neutral-100 text-neutral-900 rounded-tl-none border border-neutral-200/30'
         }`}
       >
-        <p className="break-words">{message.body}</p>
-        <p className={`text-[10px] mt-1 ${isMe ? 'text-white/70 text-right' : 'text-gray-400'}`}>
+        <p className="break-words font-medium">{message.body}</p>
+        <p className={`text-[9px] font-bold mt-1 tracking-tight ${isMe ? 'text-white/75 text-right' : 'text-neutral-400'}`}>
           {time}
         </p>
       </div>

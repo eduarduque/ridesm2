@@ -59,37 +59,37 @@ export default async function MessagesPage() {
   const conversations = Array.from(convMap.values())
 
   return (
-    <div className="min-h-screen pb-20">
-      <div className="px-4 pt-6 pb-4 border-b border-gray-100">
-        <h1 className="text-xl font-bold text-gray-900">Messages</h1>
+    <div className="min-h-screen bg-white pb-32 max-w-md mx-auto w-full border-x border-neutral-100">
+      <div className="px-4 pt-6 pb-4 border-b border-neutral-100 bg-white">
+        <h1 className="text-xl font-bold text-neutral-900">Inbox</h1>
       </div>
 
       {conversations.length === 0 ? (
-        <div className="py-20 text-center text-gray-400 text-sm">
+        <div className="py-20 text-center text-neutral-400 text-sm">
           <p className="text-4xl mb-3">💬</p>
-          <p>No messages yet.</p>
-          <p className="text-xs mt-1">Accept a request or get matched to start chatting.</p>
+          <p className="font-semibold text-neutral-700">No messages yet</p>
+          <p className="text-xs text-neutral-400 mt-1">Accept a request or get matched to start chatting.</p>
         </div>
       ) : (
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-neutral-100">
           {conversations.map((conv) => (
             <Link
               key={`${conv.rideId}:${conv.otherUserId}`}
               href={`/messages/${conv.rideId}/${conv.otherUserId}`}
-              className="flex items-center gap-3 px-4 py-4 hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-3 px-4 py-4.5 hover:bg-neutral-50 transition-colors cursor-pointer"
             >
               <div className="w-10 h-10 rounded-full bg-brand-light flex items-center justify-center text-brand font-bold shrink-0">
                 {conv.otherUserName[0].toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-baseline">
-                  <p className="font-medium text-gray-900 text-sm truncate">{conv.otherUserName}</p>
-                  <p className="text-[11px] text-gray-400 shrink-0 ml-2">
+                  <p className="font-bold text-neutral-900 text-sm truncate">{conv.otherUserName}</p>
+                  <p className="text-[10px] text-neutral-400 font-semibold shrink-0 ml-2">
                     {new Date(conv.lastTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </p>
                 </div>
-                <p className="text-xs text-gray-400 truncate">{conv.rideLabel}</p>
-                <p className="text-xs text-gray-600 truncate mt-0.5">{conv.lastMessage}</p>
+                <p className="text-[10px] text-neutral-400 font-bold truncate mt-0.5">{conv.rideLabel}</p>
+                <p className="text-xs text-neutral-600 truncate mt-1 leading-snug">{conv.lastMessage}</p>
               </div>
               {conv.unread > 0 && (
                 <div className="w-5 h-5 bg-brand rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0">

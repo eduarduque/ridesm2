@@ -30,15 +30,14 @@ function Chip({
     <button
       type="button"
       onClick={onClick}
-      data-active={active}
-      className={`chip-glow shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+      className={`shrink-0 px-4 py-2 rounded-full text-xs font-semibold tracking-tight transition-all duration-150 active:scale-95 cursor-pointer ${
         active
           ? urgent
-            ? 'bg-urgent text-white'
+            ? 'bg-red-600 text-white'
             : 'bg-brand text-white'
           : urgent
-          ? 'bg-urgent-light text-urgent hover:bg-orange-100'
-          : 'bg-white/80 text-slate-600 border border-slate-200/90 hover:border-slate-300 hover:bg-white'
+          ? 'bg-red-50 text-red-700 hover:bg-red-100'
+          : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
       }`}
     >
       {label}
@@ -54,7 +53,7 @@ export default function FilterChips({
   commutesFilter, onCommutesChange,
 }: Props) {
   return (
-    <div className="sticky top-0 z-10 backdrop-blur-md bg-white/85 border-b border-slate-200/60 shadow-sm">
+    <div className="sticky top-0 z-10 bg-white border-b border-neutral-200/50">
       <div className="flex gap-2 overflow-x-auto px-4 pt-3 pb-1.5 no-scrollbar">
         <Chip label="All routes" active={routeFilter === 'all'} onClick={() => onRouteChange('all')} />
         {POPULAR_ROUTES.map((r) => (

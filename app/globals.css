@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4f6fb;
+  --background: #f7f8fa;
   --foreground: #0f172a;
   --surface: #ffffff;
-  --brand: #534ab7;
-  --brand-dark: #3d3589;
-  --brand-light: #ebe9f8;
+  --brand: #312e81;
+  --brand-dark: #1e1b4b;
+  --brand-light: #eef2ff;
   --accent: #0d9488;
-  --accent-light: #ccfbf1;
-  --offer: #059669;
-  --offer-light: #d1fae5;
-  --request: #534ab7;
-  --request-light: #e8e5ff;
-  --urgent: #ea580c;
-  --urgent-light: #ffedd5;
+  --accent-light: #f0fdfa;
+  --offer: #312e81;
+  --offer-light: #eef2ff;
+  --request: #0d9488;
+  --request-light: #f0fdfa;
+  --urgent: #e11900;
+  --urgent-light: #ffebe9;
 }
 
 @theme inline {
@@ -29,7 +29,7 @@
   --color-offer: var(--offer);
   --color-offer-light: var(--offer-light);
   --color-request: var(--request);
-  --color-request-light: var(--request-light);
+  --color-request-light: var(--color-request-light);
   --color-urgent: var(--urgent);
   --color-urgent-light: var(--urgent-light);
   --font-sans: var(--font-geist-sans);
@@ -44,34 +44,16 @@ body {
 }
 
 .feed-mesh {
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(83, 74, 183, 0.12), transparent),
-    radial-gradient(ellipse 60% 40% at 100% 0%, rgba(13, 148, 136, 0.08), transparent),
-    var(--background);
+  background: var(--background);
 }
 
 .card-lift {
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 4px 12px rgba(15, 23, 42, 0.06);
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
 .card-lift:active {
-  transform: scale(0.985);
-}
-
-.chip-glow[data-active="true"] {
-  box-shadow: 0 2px 8px rgba(83, 74, 183, 0.35);
-}
-
-.urgent-pulse {
-  animation: urgent-glow 2s ease-in-out infinite;
-}
-
-@keyframes urgent-glow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.75; }
+  transform: scale(0.99);
 }
 
 .no-scrollbar::-webkit-scrollbar {

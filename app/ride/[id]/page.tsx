@@ -40,54 +40,60 @@ export default async function RideDetailPage({ params }: Props) {
   }
 
   return (
-    <div className="min-h-screen pb-28">
+    <div className="min-h-screen bg-white pb-32 max-w-md mx-auto w-full border-x border-neutral-100">
       <div className="px-4 pt-6 pb-4">
-        <Link href="/" className="text-brand text-sm font-medium mb-4 inline-block">← Feed</Link>
+        <Link href="/" className="text-brand text-xs font-bold mb-5 inline-flex items-center gap-1 hover:underline cursor-pointer">
+          ← Back to Feed
+        </Link>
 
         {/* Route + badge */}
-        <div className="flex items-start justify-between gap-2 mb-4">
-          <h1 className="text-2xl font-bold text-gray-900">
+        <div className="flex items-start justify-between gap-3 mb-5 mt-2">
+          <h1 className="text-2xl font-black text-neutral-900 leading-tight">
             {r.from_city} → {r.to_city}
           </h1>
-          <StatusBadge status={r.status} />
+          <div className="shrink-0">
+            <StatusBadge status={r.status} />
+          </div>
         </div>
 
         {/* Details card */}
-        <div className="bg-gray-50 rounded-2xl p-4 space-y-3 mb-6">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Type</span>
-            <span className="font-medium capitalize">{r.type === 'offer' ? '🚗 Ride offer' : '🙋 Ride request'}</span>
+        <div className="bg-neutral-50 rounded-xl border border-neutral-200/50 p-4 divide-y divide-neutral-200/40 mb-6">
+          <div className="flex justify-between text-sm pb-2.5">
+            <span className="text-neutral-500 font-medium">Type</span>
+            <span className="font-bold text-neutral-900 capitalize">{r.type === 'offer' ? '🚗 Ride offer' : '🙋 Ride request'}</span>
           </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">When</span>
-            <span className="font-medium">
+          <div className="flex justify-between text-sm py-2.5">
+            <span className="text-neutral-500 font-medium">When</span>
+            <span className="font-bold text-neutral-900">
               {r.is_now ? '🟢 Right now' : r.depart_date ? formatDate(r.depart_date, r.depart_time_start) : 'TBD'}
             </span>
           </div>
           {r.type === 'offer' && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Seats</span>
-              <span className="font-medium">{r.seats}</span>
+            <div className="flex justify-between text-sm py-2.5">
+              <span className="text-neutral-500 font-medium">Seats</span>
+              <span className="font-bold text-neutral-900">{r.seats} available</span>
             </div>
           )}
           {r.note && (
-            <div className="flex flex-col gap-1 text-sm">
-              <span className="text-gray-500">Note</span>
-              <span className="text-gray-800">{r.note}</span>
+            <div className="flex flex-col gap-1 text-sm pt-2.5">
+              <span className="text-neutral-500 font-medium">Note</span>
+              <span className="text-neutral-800 bg-white p-3 rounded-lg border border-neutral-200/50 italic text-xs leading-relaxed">
+                &ldquo;{r.note}&rdquo;
+              </span>
             </div>
           )}
         </div>
 
         {/* Poster */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-full bg-brand-light flex items-center justify-center text-brand text-lg font-bold">
+        <div className="flex items-center gap-3.5 mb-6 bg-neutral-50/50 p-3 rounded-xl border border-neutral-100">
+          <div className="w-12 h-12 rounded-full bg-brand-light flex items-center justify-center text-brand text-lg font-bold shrink-0">
             {(r.users?.name ?? '?')[0].toUpperCase()}
           </div>
           <div>
-            <p className="font-semibold text-gray-900">{r.users?.name ?? 'Anonymous'}</p>
-            <p className="text-sm text-amber-500">
+            <p className="font-bold text-neutral-900">{r.users?.name ?? 'Anonymous'}</p>
+            <p className="text-xs text-amber-500 flex items-center gap-1 mt-0.5 font-medium">
               {stars(r.users?.rating ?? 5)}{' '}
-              <span className="text-gray-400 text-xs">{(r.users?.rating ?? 5).toFixed(1)} rating</span>
+              <span className="text-neutral-400 font-semibold">{(r.users?.rating ?? 5).toFixed(1)} rating</span>
             </p>
           </div>
         </div>
@@ -99,8 +105,8 @@ export default async function RideDetailPage({ params }: Props) {
           hasRequested={hasRequested}
         />
 
-        <p className="text-center text-[11px] text-gray-300 mt-6">
-          RideSM is a free community board. Not affiliated with TXST. Use at your own risk.
+        <p className="text-center text-[10px] text-neutral-400 mt-8 font-medium">
+          RideSM is a free community board. Not affiliated with any organization. Use at your own risk.
         </p>
       </div>
     </div>

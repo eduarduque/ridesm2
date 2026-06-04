@@ -98,32 +98,32 @@ export default function PostPage() {
   }
 
   return (
-    <div className="min-h-screen pb-28">
-      <div className="px-4 pt-6 pb-4 border-b border-gray-100">
-        <h1 className="text-xl font-bold text-gray-900">Post a ride</h1>
+    <div className="min-h-screen bg-white pb-32 max-w-md mx-auto w-full border-x border-neutral-100">
+      <div className="px-4 pt-6 pb-4 border-b border-neutral-100">
+        <h1 className="text-xl font-bold text-neutral-900">Post a ride</h1>
       </div>
 
       <div className="px-4 py-6 space-y-6">
         {/* Step 1: Type toggle */}
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-2">I am…</p>
-          <div className="flex rounded-xl overflow-hidden border border-gray-200">
+          <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">I am…</p>
+          <div className="flex rounded-lg overflow-hidden border border-neutral-200">
             <button
               onClick={() => setRideType('offer')}
-              className={`flex-1 py-3 text-sm font-medium transition-colors ${
+              className={`flex-1 py-3 text-sm font-bold transition-colors cursor-pointer ${
                 rideType === 'offer'
                   ? 'bg-brand text-white'
-                  : 'bg-white text-gray-600'
+                  : 'bg-white text-neutral-600 hover:bg-neutral-50'
               }`}
             >
               🚗 Offering a ride
             </button>
             <button
               onClick={() => setRideType('request')}
-              className={`flex-1 py-3 text-sm font-medium transition-colors border-l border-gray-200 ${
+              className={`flex-1 py-3 text-sm font-bold transition-colors border-l border-neutral-200 cursor-pointer ${
                 rideType === 'request'
-                  ? 'bg-brand text-white'
-                  : 'bg-white text-gray-600'
+                  ? 'bg-accent text-white'
+                  : 'bg-white text-neutral-600 hover:bg-neutral-50'
               }`}
             >
               🙋 Need a ride
@@ -134,11 +134,11 @@ export default function PostPage() {
         {/* From / To */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">From</label>
+            <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">From</label>
             <select
               value={fromCity}
               onChange={(e) => { setFromCity(e.target.value); setFromCityCustom('') }}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-white"
+              className="w-full border border-neutral-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-white"
             >
               <option value="">Select…</option>
               {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -149,17 +149,17 @@ export default function PostPage() {
                 placeholder="City name"
                 value={fromCityCustom}
                 onChange={(e) => setFromCityCustom(e.target.value.slice(0, 50))}
-                className="w-full mt-2 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full mt-2 border border-neutral-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                 autoFocus
               />
             )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">To</label>
+            <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">To</label>
             <select
               value={toCity}
               onChange={(e) => { setToCity(e.target.value); setToCityCustom('') }}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-white"
+              className="w-full border border-neutral-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-white"
             >
               <option value="">Select…</option>
               {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -170,7 +170,7 @@ export default function PostPage() {
                 placeholder="City name"
                 value={toCityCustom}
                 onChange={(e) => setToCityCustom(e.target.value.slice(0, 50))}
-                className="w-full mt-2 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full mt-2 border border-neutral-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             )}
           </div>
@@ -178,16 +178,16 @@ export default function PostPage() {
 
         {/* When */}
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-2">When</p>
+          <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">When</p>
           <div className="grid grid-cols-2 gap-2">
             {(['now', 'today', 'tomorrow', 'pick'] as WhenOption[]).map((opt) => (
               <button
                 key={opt}
                 onClick={() => setWhenOption(opt)}
-                className={`py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                className={`py-2.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
                   whenOption === opt
                     ? 'bg-brand text-white border-brand'
-                    : 'bg-white text-gray-600 border-gray-200'
+                    : 'bg-white text-neutral-600 border-neutral-200 hover:bg-neutral-50'
                 }`}
               >
                 {opt === 'now' ? '🟢 Right now' : opt === 'today' ? 'Today' : opt === 'tomorrow' ? 'Tomorrow' : '📅 Pick date'}
@@ -201,13 +201,13 @@ export default function PostPage() {
                 value={pickDate}
                 min={todayISO()}
                 onChange={(e) => setPickDate(e.target.value)}
-                className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="border border-neutral-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
               <input
                 type="time"
                 value={pickTime}
                 onChange={(e) => setPickTime(e.target.value)}
-                className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="border border-neutral-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
           )}
@@ -216,16 +216,16 @@ export default function PostPage() {
         {/* Seats */}
         {rideType === 'offer' && (
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-2">Seats available</p>
+            <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Seats available</p>
             <div className="flex gap-2">
               {[1, 2, 3, 4].map((n) => (
                 <button
                   key={n}
                   onClick={() => setSeats(n)}
-                  className={`w-12 h-12 rounded-xl text-sm font-semibold border transition-colors ${
+                  className={`w-11 h-11 rounded-lg text-sm font-bold border transition-colors cursor-pointer ${
                     seats === n
                       ? 'bg-brand text-white border-brand'
-                      : 'bg-white text-gray-600 border-gray-200'
+                      : 'bg-white text-neutral-600 border-neutral-200 hover:bg-neutral-50'
                   }`}
                 >
                   {n}
@@ -237,17 +237,17 @@ export default function PostPage() {
 
         {/* Recurring */}
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-2">Frequency</p>
-          <div className="flex rounded-xl overflow-hidden border border-gray-200">
+          <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Frequency</p>
+          <div className="flex rounded-lg overflow-hidden border border-neutral-200">
             <button
               onClick={() => setIsRecurring(false)}
-              className={`flex-1 py-3 text-sm font-medium transition-colors ${!isRecurring ? 'bg-brand text-white' : 'bg-white text-gray-600'}`}
+              className={`flex-1 py-3 text-sm font-bold transition-colors cursor-pointer ${!isRecurring ? 'bg-brand text-white' : 'bg-white text-neutral-600 hover:bg-neutral-50'}`}
             >
               One-time
             </button>
             <button
               onClick={() => setIsRecurring(true)}
-              className={`flex-1 py-3 text-sm font-medium border-l border-gray-200 transition-colors ${isRecurring ? 'bg-brand text-white' : 'bg-white text-gray-600'}`}
+              className={`flex-1 py-3 text-sm font-bold border-l border-neutral-200 transition-colors cursor-pointer ${isRecurring ? 'bg-brand text-white' : 'bg-white text-neutral-600 hover:bg-neutral-50'}`}
             >
               🔄 Recurring
             </button>
@@ -262,10 +262,10 @@ export default function PostPage() {
                       prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
                     )
                   }
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors cursor-pointer ${
                     recurringDays.includes(day)
                       ? 'bg-brand text-white border-brand'
-                      : 'bg-white text-gray-600 border-gray-200'
+                      : 'bg-white text-neutral-600 border-neutral-200 hover:bg-neutral-50'
                   }`}
                 >
                   {day}
@@ -279,12 +279,12 @@ export default function PostPage() {
         <div>
           <label className="flex items-center justify-between cursor-pointer">
             <div>
-              <p className="text-sm font-medium text-gray-700">🧳 Space for luggage</p>
-              <p className="text-xs text-gray-400">Check this if you can carry bags or boxes</p>
+              <p className="text-sm font-bold text-neutral-800">🧳 Space for luggage</p>
+              <p className="text-xs text-neutral-400 font-medium">Check this if you can carry bags or boxes</p>
             </div>
             <button
               onClick={() => setHasLuggageSpace((v) => !v)}
-              className={`w-12 h-6 rounded-full transition-colors relative ${hasLuggageSpace ? 'bg-brand' : 'bg-gray-200'}`}
+              className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${hasLuggageSpace ? 'bg-brand' : 'bg-neutral-200'}`}
             >
               <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${hasLuggageSpace ? 'translate-x-6' : 'translate-x-0.5'}`} />
             </button>
@@ -293,33 +293,33 @@ export default function PostPage() {
 
         {/* Note */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Note <span className="text-gray-400 font-normal">(optional)</span>
+          <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">
+            Note <span className="text-neutral-400 font-normal lowercase">(optional)</span>
           </label>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value.slice(0, 140))}
             placeholder="e.g. leaving from the quad, can pickup along 35…"
             rows={3}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand"
+            className="w-full border border-neutral-200 rounded-lg px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand"
           />
-          <p className="text-xs text-gray-400 text-right">{note.length}/140</p>
+          <p className="text-[10px] text-neutral-400 text-right font-medium mt-1">{note.length}/140</p>
         </div>
 
         {/* Terms checkbox (first post only) */}
         {needsTerms && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-            <p className="text-xs text-gray-700 mb-3 leading-relaxed">{DISCLAIMER}</p>
-            <label className="flex items-start gap-2 cursor-pointer">
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <p className="text-xs text-neutral-700 mb-3 leading-relaxed font-medium">{DISCLAIMER}</p>
+            <label className="flex items-start gap-2.5 cursor-pointer">
               <input
                 type="checkbox"
                 checked={agreedTerms}
                 onChange={(e) => setAgreedTerms(e.target.checked)}
                 className="mt-0.5 accent-brand"
               />
-              <span className="text-sm text-gray-700">
+              <span className="text-xs font-semibold text-neutral-700">
                 I have read and agree to these terms.{' '}
-                <Link href="/terms" target="_blank" className="text-brand underline">
+                <Link href="/terms" target="_blank" className="text-brand underline font-bold">
                   Full terms
                 </Link>
               </span>
@@ -328,13 +328,13 @@ export default function PostPage() {
         )}
 
         {error && (
-          <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl">{error}</div>
+          <div className="p-3 bg-red-50 text-red-600 text-xs font-semibold rounded-lg">{error}</div>
         )}
 
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full bg-brand text-white font-semibold py-4 rounded-xl disabled:opacity-50 hover:bg-brand-dark transition-colors"
+          className="w-full bg-brand text-white font-bold py-4 rounded-lg disabled:opacity-50 hover:bg-brand-dark transition-colors cursor-pointer"
         >
           {loading ? 'Posting…' : 'Post ride'}
         </button>

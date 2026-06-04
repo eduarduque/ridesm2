@@ -11,34 +11,6 @@ interface Props {
   onRequest: (rideId: string) => void
 }
 
-function cardTitle(ride: RideWithUser): string {
-  const route =
-    ride.from_city === ride.to_city
-      ? `Within ${ride.from_city.replace('San Marcos', 'SM')}`
-      : `${ride.from_city.replace('San Marcos', 'SM')} → ${ride.to_city.replace('San Marcos', 'SM')}`
-
-  if (ride.is_now && ride.type === 'request') {
-    return `Need Urgent Ride ${ride.from_city === ride.to_city ? 'Within SM' : route}`
-  }
-  if (ride.type === 'offer') return `Ride Available ${route}`
-  return `Ride Needed ${route}`
-}
-
-function routeDetail(ride: RideWithUser): string {
-  if (ride.note) return ride.note
-  const from = ride.from_city.replace('San Marcos', 'SM')
-  const to = ride.to_city.replace('San Marcos', 'SM')
-  if (ride.from_city === ride.to_city) return `${from} area`
-  if (ride.is_now) return `${from} to ${to} (ASAP)`
-  if (ride.depart_time_start) {
-    const [h, m] = ride.depart_time_start.split(':').map(Number)
-    const p = h >= 12 ? 'PM' : 'AM'
-    const t = `${h % 12 || 12}:${m.toString().padStart(2, '0')} ${p}`
-    return `${from} to ${to} (${t})`
-  }
-  return `${from} to ${to}`
-}
-
 function statusLabel(ride: RideWithUser): { text: string; variant: 'open' | 'filling' | 'closed' } {
   if (ride.status === 'matched' || ride.status === 'expired' || ride.status === 'cancelled') {
     return { text: ride.status.toUpperCase(), variant: 'closed' }
@@ -55,10 +27,10 @@ function statusLabel(ride: RideWithUser): { text: string; variant: 'open' | 'fil
   return { text: 'OPEN (1 person)', variant: 'open' }
 }
 
-function Avatar({ name }: { name: string | null | undefined }) {
+function Avatar({ name, isOffer }: { name: string | null | undefined; isOffer: boolean }) {
   const initial = (name ?? '?')[0].toUpperCase()
   return (
-    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center text-white text-xs font-bold shrink-0 ring-2 ring-white shadow-sm">
+    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm ${isOffer ? 'bg-brand' : 'bg-accent'}`}>
       {initial}
     </div>
   )
@@ -71,24 +43,23 @@ export default function RideCard({ ride, userId, hasRequested, onRequest }: Prop
   const isUrgent = ride.is_now
   const status = statusLabel(ride)
   const posterName = ride.users?.name ?? 'Anonymous'
+  const ratingValue = ride.users?.rating ?? 5.0
   const phone = ride.users?.phone
 
-  const borderColor = isUrgent
-    ? 'border-t-urgent'
-    : isOffer
-    ? 'border-t-offer'
-    : 'border-t-request'
+  const borderClass = isOffer
+    ? 'border-l-4 border-l-brand'
+    : 'border-l-4 border-l-accent'
 
   const typeTagClass = isOffer
-    ? 'bg-offer-light text-offer'
-    : 'bg-request-light text-request'
+    ? 'bg-brand-light text-brand'
+    : 'bg-accent-light text-accent'
 
   const statusTagClass =
     status.variant === 'open'
-      ? 'bg-emerald-50 text-emerald-700'
+      ? 'bg-emerald-50 text-emerald-800'
       : status.variant === 'filling'
-      ? 'bg-amber-50 text-amber-700'
-      : 'bg-slate-100 text-slate-500'
+      ? 'bg-amber-50 text-amber-800'
+      : 'bg-neutral-100 text-neutral-600'
 
   function handleReport(e: React.MouseEvent) {
     e.preventDefault()
@@ -103,7 +74,7 @@ export default function RideCard({ ride, userId, hasRequested, onRequest }: Prop
   function renderAction() {
     if (isOwn) {
       return (
-        <div className="w-full text-center py-2.5 bg-slate-100 text-slate-500 text-xs font-semibold rounded-xl">
+        <div className="w-full text-center py-2.5 bg-neutral-100 text-neutral-500 text-xs font-semibold rounded-lg">
           Your post
         </div>
       )
@@ -112,8 +83,9 @@ export default function RideCard({ ride, userId, hasRequested, onRequest }: Prop
       return (
         <Link
           href="/login"
-          onClick={(e) => e.stopPropagation()}
-          className="block w-full text-center py-2.5 rounded-xl text-xs font-bold text-white bg-brand shadow-sm"
+          className={`block w-full text-center py-2.5 rounded-lg text-xs font-bold text-white shadow-sm transition-colors cursor-pointer ${
+            isOffer ? 'bg-brand hover:bg-brand-dark' : 'bg-accent hover:bg-teal-700'
+          }`}
         >
           Sign in to respond
         </Link>
@@ -121,21 +93,21 @@ export default function RideCard({ ride, userId, hasRequested, onRequest }: Prop
     }
     if (ride.status === 'matched' || ride.status === 'expired' || ride.status === 'cancelled') {
       return (
-        <div className="w-full text-center py-2.5 bg-slate-100 text-slate-400 text-xs font-semibold rounded-xl">
+        <div className="w-full text-center py-2.5 bg-neutral-100 text-neutral-400 text-xs font-semibold rounded-lg">
           Closed
         </div>
       )
     }
     if (hasRequested) {
       return (
-        <div className="w-full text-center py-2.5 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-xl border border-emerald-200">
+        <div className="w-full text-center py-2.5 bg-emerald-50 text-emerald-800 text-xs font-bold rounded-lg border border-emerald-200">
           ✓ Request sent
         </div>
       )
     }
     if (!canAct) {
       return (
-        <div className="w-full text-center py-2.5 bg-slate-100 text-slate-400 text-xs font-semibold rounded-xl">
+        <div className="w-full text-center py-2.5 bg-neutral-100 text-neutral-400 text-xs font-semibold rounded-lg">
           Unavailable
         </div>
       )
@@ -145,8 +117,7 @@ export default function RideCard({ ride, userId, hasRequested, onRequest }: Prop
       return (
         <a
           href={`tel:${phone}`}
-          onClick={(e) => e.stopPropagation()}
-          className="block w-full text-center py-2.5 rounded-xl text-xs font-bold text-white bg-accent shadow-sm hover:bg-teal-700 transition-colors"
+          className="block w-full text-center py-2.5 rounded-lg text-xs font-bold text-white bg-accent hover:bg-teal-700 transition-colors shadow-sm cursor-pointer"
         >
           Call Requestor
         </a>
@@ -155,11 +126,8 @@ export default function RideCard({ ride, userId, hasRequested, onRequest }: Prop
 
     return (
       <button
-        onClick={(e) => {
-          e.stopPropagation()
-          onRequest(ride.id)
-        }}
-        className={`w-full py-2.5 rounded-xl text-xs font-bold text-white shadow-sm transition-colors ${
+        onClick={() => onRequest(ride.id)}
+        className={`w-full py-2.5 rounded-lg text-xs font-bold text-white shadow-sm transition-colors cursor-pointer ${
           isOffer ? 'bg-brand hover:bg-brand-dark' : 'bg-accent hover:bg-teal-700'
         }`}
       >
@@ -168,85 +136,117 @@ export default function RideCard({ ride, userId, hasRequested, onRequest }: Prop
     )
   }
 
+  // Format departure label
+  const departureLabel = isUrgent
+    ? '🔴 ASAP (Urgent)'
+    : ride.depart_date
+    ? `${formatDate(ride.depart_date, ride.depart_time_start)}`
+    : 'TBD'
+
   return (
-    <article
-      className={`card-lift bg-surface rounded-2xl overflow-hidden border border-slate-200/80 border-t-4 ${borderColor} ${
-        isUrgent ? 'urgent-pulse ring-1 ring-urgent/20' : ''
-      }`}
-    >
-      <Link href={`/ride/${ride.id}`} className="block p-3 pb-2">
-        <div className="flex items-center justify-between gap-1 mb-2">
-          <span
-            className={`inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${typeTagClass}`}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+    <div className={`bg-white border border-neutral-200/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between card-lift ${borderClass} ${isUrgent ? 'ring-1 ring-red-500/10' : ''}`}>
+      {/* Top Header Row */}
+      <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+        <div className="flex items-center gap-2.5">
+          <Avatar name={posterName} isOffer={isOffer} />
+          <div>
+            <div className="text-xs font-bold text-neutral-950 leading-tight">{posterName}</div>
+            <div className="text-[10px] text-neutral-500 flex items-center gap-1 mt-0.5 font-medium">
+              <span className="text-amber-500">★</span>
+              <span className="font-semibold text-neutral-700">{ratingValue.toFixed(1)}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col items-end gap-1.5">
+          <span className={`text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded ${typeTagClass}`}>
             {isOffer ? 'Offering ride' : 'Requesting ride'}
           </span>
-          <span
-            className={`inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${statusTagClass}`}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+          <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${statusTagClass}`}>
             {status.text}
           </span>
         </div>
+      </div>
 
-        <h2 className="text-[13px] font-bold text-slate-900 leading-snug line-clamp-2 mb-1">
-          {cardTitle(ride)}
-        </h2>
-
-        <p className="text-[10px] text-slate-500 mb-0.5">
-          <span className="text-slate-400">{timeAgo(ride.created_at)}</span>
-          <span className="mx-1">·</span>
-          {routeDetail(ride)}
-        </p>
-
-        {isUrgent && (
-          <div className="flex items-center gap-1 mt-1.5 text-[10px] font-semibold text-urgent">
-            <span aria-hidden>⏱️</span>
-            <span>Urgent ASAP</span>
+      {/* Visual Timeline Details */}
+      <Link href={`/ride/${ride.id}`} className="block py-4 group cursor-pointer">
+        <div className="flex gap-4">
+          {/* Vertical timeline graphic */}
+          <div className="flex flex-col items-center justify-between py-1 shrink-0">
+            <div className={`w-2 h-2 rounded-full border-2 bg-white group-hover:bg-current transition-colors ${isOffer ? 'border-brand text-brand' : 'border-accent text-accent'}`} />
+            <div className="w-[1.5px] bg-neutral-300 grow my-1 min-h-[24px]" />
+            <div className={`w-2 h-2 rounded-sm ${isOffer ? 'bg-brand' : 'bg-accent'}`} />
           </div>
-        )}
+          {/* Route cities */}
+          <div className="flex flex-col justify-between grow py-0.5">
+            <div className="text-sm font-bold text-neutral-950 group-hover:text-black transition-colors leading-none">
+              {ride.from_city}
+            </div>
+            <div className="h-4" />
+            <div className="text-sm font-bold text-neutral-950 group-hover:text-black transition-colors leading-none">
+              {ride.to_city}
+            </div>
+          </div>
+        </div>
 
+        {/* Details row */}
+        <div className="mt-3.5 space-y-1.5 text-xs text-neutral-600">
+          <div className="flex justify-between items-baseline">
+            <span className="text-neutral-500">Departure</span>
+            <span className="font-semibold text-neutral-900">{departureLabel}</span>
+          </div>
+          {isOffer && (
+            <div className="flex justify-between items-baseline">
+              <span className="text-neutral-500">Seats</span>
+              <span className="font-semibold text-neutral-900">{ride.seats} available</span>
+            </div>
+          )}
+          {ride.note && (
+            <p className="text-neutral-500 italic mt-2 text-[11px] line-clamp-2 leading-relaxed bg-neutral-50 p-2 rounded-lg border border-neutral-100/50">
+              &ldquo;{ride.note}&rdquo;
+            </p>
+          )}
+        </div>
+
+        {/* Badges */}
         {(ride.is_recurring || ride.has_luggage_space) && (
-          <div className="flex flex-wrap gap-1 mt-1.5">
+          <div className="flex flex-wrap gap-1.5 mt-3">
             {ride.is_recurring && (
-              <span className="text-[9px] font-semibold bg-violet-50 text-violet-600 px-1.5 py-0.5 rounded-full">
+              <span className="text-[9px] font-bold bg-neutral-100 text-neutral-800 px-2 py-0.5 rounded">
                 🔄 Commute
               </span>
             )}
             {ride.has_luggage_space && (
-              <span className="text-[9px] font-semibold bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded-full">
+              <span className="text-[9px] font-bold bg-neutral-100 text-neutral-800 px-2 py-0.5 rounded">
                 🧳 Luggage
               </span>
             )}
           </div>
         )}
-
-        <div className="flex items-center gap-2 mt-2.5">
-          <Avatar name={ride.users?.name} />
-          <span className="text-[11px] font-medium text-slate-700 truncate">{posterName}</span>
-        </div>
       </Link>
 
-      <div className="px-3 pb-3 space-y-2">
+      {/* Button Actions */}
+      <div className="pt-2 border-t border-neutral-100 space-y-2.5">
         {renderAction()}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between px-0.5">
           <button
             type="button"
             onClick={handleReport}
-            className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-slate-600 transition-colors"
+            className="flex items-center gap-1 text-[10px] text-neutral-400 hover:text-neutral-600 transition-colors font-medium cursor-pointer"
           >
-            <span aria-hidden>🚩</span>
-            Report
+            <span>🚩</span> Report
           </button>
-          <Link
-            href={`/ride/${ride.id}`}
-            className="text-[10px] text-brand font-medium hover:underline"
-          >
-            Details →
-          </Link>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-neutral-400">{timeAgo(ride.created_at)}</span>
+            <span className="text-neutral-300">·</span>
+            <Link
+              href={`/ride/${ride.id}`}
+              className={`text-[10px] font-bold hover:underline ${isOffer ? 'text-brand' : 'text-accent'}`}
+            >
+              Details →
+            </Link>
+          </div>
         </div>
       </div>
-    </article>
+    </div>
   )
 }
