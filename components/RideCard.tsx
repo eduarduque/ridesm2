@@ -44,8 +44,13 @@ export default function RideCard({ ride, userId, hasRequested, onRequest }: Prop
 
   const actionLabel = hasRequested ? 'Requested ✓' : isOffer ? 'Join Ride' : "I'll Drive"
 
+  const isUrgent = ride.is_now
+  const withinTown = ride.from_city === ride.to_city
+
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className={`bg-white rounded-2xl shadow-sm overflow-hidden border ${
+      isUrgent ? 'border-orange-400 shadow-orange-100 shadow-md' : 'border-gray-100'
+    }`}>
       {/* Top row: type badge + status */}
       <div className="flex items-center justify-between px-4 pt-3 pb-0">
         <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full ${
@@ -62,9 +67,10 @@ export default function RideCard({ ride, userId, hasRequested, onRequest }: Prop
       {/* Route — hero */}
       <Link href={`/ride/${ride.id}`} className="block px-4 pt-2 pb-1">
         <h2 className="text-[17px] font-extrabold text-gray-900 leading-snug">
-          {ride.from_city}
-          <span className="text-brand mx-1.5">→</span>
-          {ride.to_city}
+          {withinTown
+            ? `📍 Within ${ride.from_city}`
+            : <>{ride.from_city}<span className="text-brand mx-1.5">→</span>{ride.to_city}</>
+          }
         </h2>
       </Link>
 
@@ -74,6 +80,22 @@ export default function RideCard({ ride, userId, hasRequested, onRequest }: Prop
           🕒 <span className="font-medium">{timeDisplay(ride)}</span>
         </span>
       </div>
+
+      {/* Tags row: recurring + luggage */}
+      {(ride.is_recurring || ride.has_luggage_space) && (
+        <div className="flex gap-2 px-4 pb-2">
+          {ride.is_recurring && (
+            <span className="text-[10px] font-semibold bg-purple-50 text-purple-600 px-2 py-0.5 rounded-full">
+              🔄 Recurring · {ride.recurring_days?.join(', ')}
+            </span>
+          )}
+          {ride.has_luggage_space && (
+            <span className="text-[10px] font-semibold bg-yellow-50 text-yellow-700 px-2 py-0.5 rounded-full">
+              🧳 Luggage OK
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Note */}
       {ride.note && (

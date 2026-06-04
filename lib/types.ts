@@ -23,6 +23,9 @@ export interface Ride {
   seats: number
   note: string | null
   status: RideStatus
+  is_recurring: boolean
+  recurring_days: string[]
+  has_luggage_space: boolean
   created_at: string
 }
 

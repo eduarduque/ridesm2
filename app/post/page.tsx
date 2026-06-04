@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { CITIES, DISCLAIMER } from '@/lib/constants'
+import { CITIES, DAYS, DISCLAIMER } from '@/lib/constants'
 import type { RideType } from '@/lib/types'
 import Link from 'next/link'
 import { todayISO, tomorrowISO } from '@/lib/utils'
@@ -20,6 +20,9 @@ export default function PostPage() {
   const [pickDate, setPickDate] = useState('')
   const [pickTime, setPickTime] = useState('')
   const [seats, setSeats] = useState(1)
+  const [isRecurring, setIsRecurring] = useState(false)
+  const [recurringDays, setRecurringDays] = useState<string[]>([])
+  const [hasLuggageSpace, setHasLuggageSpace] = useState(false)
   const [note, setNote] = useState('')
   const [agreedTerms, setAgreedTerms] = useState(false)
   const [needsTerms, setNeedsTerms] = useState(false)
@@ -34,7 +37,7 @@ export default function PostPage() {
     if (!resolvedFrom || !resolvedTo) { setError('Please select From and To cities.'); return }
     if (fromCity === 'Other' && !fromCityCustom.trim()) { setError('Please specify the "From" city.'); return }
     if (toCity === 'Other' && !toCityCustom.trim()) { setError('Please specify the "To" city.'); return }
-    if (resolvedFrom === resolvedTo) { setError('From and To must be different cities.'); return }
+    if (isRecurring && recurringDays.length === 0) { setError('Please select at least one day for the recurring ride.'); return }
     if (whenOption === 'pick' && !pickDate) { setError('Please pick a date.'); return }
     if (needsTerms && !agreedTerms) { setError('Please agree to the terms to post.'); return }
 
@@ -80,6 +83,9 @@ export default function PostPage() {
       depart_date: isNow ? null : departDate,
       depart_time_start: isNow ? null : pickTime || null,
       seats,
+      is_recurring: isRecurring,
+      recurring_days: isRecurring ? recurringDays : [],
+      has_luggage_space: hasLuggageSpace,
       note: note.trim() || null,
     })
 
@@ -228,6 +234,62 @@ export default function PostPage() {
             </div>
           </div>
         )}
+
+        {/* Recurring */}
+        <div>
+          <p className="text-sm font-medium text-gray-700 mb-2">Frequency</p>
+          <div className="flex rounded-xl overflow-hidden border border-gray-200">
+            <button
+              onClick={() => setIsRecurring(false)}
+              className={`flex-1 py-3 text-sm font-medium transition-colors ${!isRecurring ? 'bg-brand text-white' : 'bg-white text-gray-600'}`}
+            >
+              One-time
+            </button>
+            <button
+              onClick={() => setIsRecurring(true)}
+              className={`flex-1 py-3 text-sm font-medium border-l border-gray-200 transition-colors ${isRecurring ? 'bg-brand text-white' : 'bg-white text-gray-600'}`}
+            >
+              🔄 Recurring
+            </button>
+          </div>
+          {isRecurring && (
+            <div className="flex gap-2 flex-wrap mt-3">
+              {DAYS.map((day) => (
+                <button
+                  key={day}
+                  onClick={() =>
+                    setRecurringDays((prev) =>
+                      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+                    )
+                  }
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                    recurringDays.includes(day)
+                      ? 'bg-brand text-white border-brand'
+                      : 'bg-white text-gray-600 border-gray-200'
+                  }`}
+                >
+                  {day}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Luggage */}
+        <div>
+          <label className="flex items-center justify-between cursor-pointer">
+            <div>
+              <p className="text-sm font-medium text-gray-700">🧳 Space for luggage</p>
+              <p className="text-xs text-gray-400">Check this if you can carry bags or boxes</p>
+            </div>
+            <button
+              onClick={() => setHasLuggageSpace((v) => !v)}
+              className={`w-12 h-6 rounded-full transition-colors relative ${hasLuggageSpace ? 'bg-brand' : 'bg-gray-200'}`}
+            >
+              <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${hasLuggageSpace ? 'translate-x-6' : 'translate-x-0.5'}`} />
+            </button>
+          </label>
+        </div>
 
         {/* Note */}
         <div>

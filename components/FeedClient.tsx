@@ -19,6 +19,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
   const [routeFilter, setRouteFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
   const [timeFilter, setTimeFilter] = useState('all')
+  const [luggageFilter, setLuggageFilter] = useState(false)
   const [requesting, setRequesting] = useState<string | null>(null)
   const [error, setError] = useState('')
 
@@ -53,10 +54,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
   }, [])
 
   async function handleRequest(rideId: string) {
-    if (!userId) {
-      window.location.href = '/login'
-      return
-    }
+    if (!userId) { window.location.href = '/login'; return }
     setRequesting(rideId)
     setError('')
     const supabase = createClient()
@@ -75,20 +73,25 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
   const today = todayISO()
   const tomorrow = tomorrowISO()
 
-  const visible = rides.filter((ride) => {
-    if (ride.status !== 'open' && ride.status !== 'filling') return false
+  // Urgent rides (is_now) always float to the top
+  const sorted = [...rides].sort((a, b) => {
+    if (a.is_now && !b.is_now) return -1
+    if (!a.is_now && b.is_now) return 1
+    return 0
+  })
 
+  const visible = sorted.filter((ride) => {
+    if (ride.status !== 'open' && ride.status !== 'filling') return false
     if (typeFilter !== 'all' && ride.type !== typeFilter) return false
+    if (luggageFilter && !ride.has_luggage_space) return false
 
     if (routeFilter !== 'all') {
       const [from, to] = routeFilter.split('→')
       if (ride.from_city !== from || ride.to_city !== to) return false
     }
 
-    if (timeFilter === 'today') {
-      if (ride.is_now) return true
-      return ride.depart_date === today
-    }
+    if (timeFilter === 'urgent') return ride.is_now
+    if (timeFilter === 'today') return ride.is_now || ride.depart_date === today
     if (timeFilter === 'tomorrow') return ride.depart_date === tomorrow
 
     return true
@@ -96,7 +99,6 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="px-4 pt-6 pb-2 bg-white border-b border-gray-100">
         <h1 className="text-xl font-bold text-brand">RideSM</h1>
         <p className="text-xs text-gray-400">SM · Austin · Dallas corridor</p>
@@ -109,6 +111,8 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
         onTypeChange={setTypeFilter}
         timeFilter={timeFilter}
         onTimeChange={setTimeFilter}
+        luggageFilter={luggageFilter}
+        onLuggageChange={setLuggageFilter}
       />
 
       {error && (

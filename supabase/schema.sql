@@ -26,6 +26,9 @@ CREATE TABLE IF NOT EXISTS public.rides (
   is_now BOOLEAN DEFAULT false,
   seats INTEGER DEFAULT 1,
   note TEXT,
+  is_recurring BOOLEAN DEFAULT false,
+  recurring_days TEXT[] DEFAULT '{}',
+  has_luggage_space BOOLEAN DEFAULT false,
   status TEXT DEFAULT 'open' CHECK (status IN ('open', 'filling', 'matched', 'expired', 'cancelled')),
   created_at TIMESTAMPTZ DEFAULT now()
 );
