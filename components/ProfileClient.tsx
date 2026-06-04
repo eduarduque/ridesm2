@@ -1,10 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@/lib/types'
-import { stars } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 
 interface Props {
@@ -19,7 +18,15 @@ export default function ProfileClient({ profile, isAdmin }: Props) {
   const [editingPhone, setEditingPhone] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [devRole, setDevRole] = useState<string | null>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    setDevRole(localStorage.getItem('devRole'))
+    const handler = (e: Event) => setDevRole((e as CustomEvent).detail)
+    window.addEventListener('devRoleChange', handler)
+    return () => window.removeEventListener('devRoleChange', handler)
+  }, [])
 
   async function saveField(field: 'name' | 'phone', value: string) {
     setSaving(true)
@@ -151,13 +158,6 @@ export default function ProfileClient({ profile, isAdmin }: Props) {
           </div>
 
           <div className="flex justify-between items-center px-4 py-3.5">
-            <span className="text-sm text-neutral-500 font-medium">Rating</span>
-            <div className="text-right flex items-center gap-1.5">
-              <span className="text-amber-500 text-xs">★</span>
-              <span className="text-neutral-800 text-sm font-bold">{profile.rating.toFixed(1)}</span>
-            </div>
-          </div>
-          <div className="flex justify-between items-center px-4 py-3.5">
             <span className="text-sm text-neutral-500 font-medium">Total Rides</span>
             <span className="text-sm font-bold text-neutral-900">{profile.ride_count}</span>
           </div>
@@ -167,7 +167,7 @@ export default function ProfileClient({ profile, isAdmin }: Props) {
           </div>
         </div>
 
-        {isAdmin && (
+        {isAdmin && (!devRole || devRole === 'admin') && (
           <Link
             href="/admin/feedback"
             className="flex items-center justify-center gap-2 w-full py-3 text-xs font-bold text-brand border border-brand/30 bg-brand/5 rounded-lg hover:bg-brand/10 transition-colors"
