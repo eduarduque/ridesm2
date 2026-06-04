@@ -1,6 +1,6 @@
 export interface User {
   id: string
-  phone: string
+  phone: string | null
   name: string | null
   rating: number
   ride_count: number
