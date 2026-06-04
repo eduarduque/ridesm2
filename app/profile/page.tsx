@@ -15,7 +15,7 @@ export default async function ProfilePage() {
     .eq('id', user.id)
     .single()
 
-  if (!profile) redirect('/login')
+  if (!profile) redirect('/onboarding')
 
   return <ProfileClient profile={profile} />
 }
