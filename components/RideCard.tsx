@@ -15,16 +15,30 @@ function statusLabel(ride: RideWithUser): { text: string; variant: 'open' | 'fil
   if (ride.status === 'matched' || ride.status === 'expired' || ride.status === 'cancelled') {
     return { text: ride.status.toUpperCase(), variant: 'closed' }
   }
-  if (ride.status === 'filling') {
-    return {
-      text: ride.type === 'offer' ? `FILLING (${ride.seats} seats)` : 'FILLING',
-      variant: 'filling',
-    }
-  }
-  if (ride.type === 'offer') {
-    return { text: `AVAILABLE (${ride.seats} seat${ride.seats !== 1 ? 's' : ''})`, variant: 'open' }
-  }
-  return { text: 'OPEN (1 person)', variant: 'open' }
+  if (ride.status === 'filling') return { text: 'FILLING', variant: 'filling' }
+  if (ride.type === 'offer') return { text: 'AVAILABLE', variant: 'open' }
+  return { text: 'OPEN', variant: 'open' }
+}
+
+function SeatDots({ seats }: { seats: number }) {
+  const MAX = 4
+  return (
+    <div className="flex items-center gap-1">
+      {Array.from({ length: MAX }).map((_, i) => (
+        <div
+          key={i}
+          className={`w-2.5 h-2.5 rounded-full border transition-colors ${
+            i < seats
+              ? 'bg-brand border-brand'
+              : 'bg-white border-neutral-300'
+          }`}
+        />
+      ))}
+      <span className="text-[10px] text-neutral-500 font-medium ml-1">
+        {seats} spot{seats !== 1 ? 's' : ''} left
+      </span>
+    </div>
+  )
 }
 
 function Avatar({ name, isOffer }: { name: string | null | undefined; isOffer: boolean }) {
@@ -178,9 +192,9 @@ export default function RideCard({ ride, userId, hasRequested, onRequest }: Prop
             <span className="font-semibold text-neutral-900">{departureLabel}</span>
           </div>
           {isOffer && (
-            <div className="flex justify-between items-baseline">
+            <div className="flex justify-between items-center">
               <span className="text-neutral-500">Seats</span>
-              <span className="font-semibold text-neutral-900">{ride.seats} available</span>
+              <SeatDots seats={ride.seats} />
             </div>
           )}
           {ride.note && (
