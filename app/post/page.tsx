@@ -276,18 +276,24 @@ export default function PostPage() {
         </div>
 
         {/* Luggage */}
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-bold text-neutral-800">🧳 Space for luggage</p>
-            <p className="text-xs text-neutral-400 font-medium">Check this if you can carry bags or boxes</p>
+        <div>
+          <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Luggage space</p>
+          <div className="flex rounded-lg overflow-hidden border border-neutral-200">
+            <button
+              type="button"
+              onClick={() => setHasLuggageSpace(false)}
+              className={`flex-1 py-3 text-sm font-bold transition-colors cursor-pointer ${!hasLuggageSpace ? 'bg-brand text-white' : 'bg-white text-neutral-600 hover:bg-neutral-50'}`}
+            >
+              No
+            </button>
+            <button
+              type="button"
+              onClick={() => setHasLuggageSpace(true)}
+              className={`flex-1 py-3 text-sm font-bold border-l border-neutral-200 transition-colors cursor-pointer ${hasLuggageSpace ? 'bg-brand text-white' : 'bg-white text-neutral-600 hover:bg-neutral-50'}`}
+            >
+              🧳 Yes
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setHasLuggageSpace((v) => !v)}
-            className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${hasLuggageSpace ? 'bg-brand' : 'bg-neutral-200'}`}
-          >
-            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${hasLuggageSpace ? 'translate-x-6' : 'translate-x-0.5'}`} />
-          </button>
         </div>
 
         {/* Note */}
