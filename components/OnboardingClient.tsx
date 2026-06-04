@@ -33,8 +33,7 @@ export default function OnboardingClient({ userId }: Props) {
     const supabase = createClient()
     const { error } = await supabase
       .from('users')
-      .update({ name: trimmedName, phone: trimmedPhone })
-      .eq('id', userId)
+      .upsert({ id: userId, name: trimmedName, phone: trimmedPhone }, { onConflict: 'id' })
 
     if (error) {
       setError(error.message)

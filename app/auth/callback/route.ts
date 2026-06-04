@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       const { data: { user } } = await supabase.auth.getUser()
 
       if (user) {
-        // Create user record if this is their first login
+        // Create user record if this is their first login (phone nullable after migration)
         await supabase.from('users').upsert(
           { id: user.id },
           { onConflict: 'id', ignoreDuplicates: true }
