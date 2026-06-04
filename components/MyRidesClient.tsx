@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { RideWithUser, MatchRequestWithDetails } from '@/lib/types'
@@ -19,7 +19,16 @@ export default function MyRidesClient({ rides: initialRides, requests: initialRe
   const [rides, setRides] = useState(initialRides)
   const [requests, setRequests] = useState(initialRequests)
   const [loading, setLoading] = useState<string | null>(null)
+  const [devRole, setDevRole] = useState<string | null>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    const saved = localStorage.getItem('devRole')
+    if (saved) setDevRole(saved)
+    function handleRoleChange(e: Event) { setDevRole((e as CustomEvent).detail) }
+    window.addEventListener('devRoleChange', handleRoleChange)
+    return () => window.removeEventListener('devRoleChange', handleRoleChange)
+  }, [])
 
   async function cancelRide(rideId: string) {
     setLoading(rideId)
@@ -41,6 +50,8 @@ export default function MyRidesClient({ rides: initialRides, requests: initialRe
   }
 
   const pendingCount = requests.filter((r) => r.status === 'pending').length
+  const postsLabel = devRole === 'driver' ? 'My Offers' : 'My Posts'
+  const requestsLabel = devRole === 'driver' ? 'Incoming Requests' : 'Requests'
 
   return (
     <div className="min-h-screen bg-white pb-32 max-w-md mx-auto w-full border-x border-neutral-100">
@@ -58,7 +69,7 @@ export default function MyRidesClient({ rides: initialRides, requests: initialRe
               : 'border-transparent text-neutral-400 hover:text-neutral-600'
           }`}
         >
-          My Posts
+          {postsLabel}
         </button>
         <button
           onClick={() => setTab('requests')}
@@ -68,7 +79,7 @@ export default function MyRidesClient({ rides: initialRides, requests: initialRe
               : 'border-transparent text-neutral-400 hover:text-neutral-600'
           }`}
         >
-          Requests
+          {requestsLabel}
           {pendingCount > 0 && (
             <span className="bg-brand text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
               {pendingCount}

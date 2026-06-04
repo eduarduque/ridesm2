@@ -134,6 +134,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
   const showSplit = typeFilter === 'all'
 
   const devMode = !!(devRole && devRole !== 'admin')
+  const isDriverView = devRole === 'driver'
 
   function renderCards(list: typeof visible) {
     return list.map((ride) => (
@@ -144,6 +145,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
         hasRequested={requested.has(ride.id) || requesting === ride.id}
         onRequest={handleRequest}
         devMode={devMode}
+        devRole={devRole ?? undefined}
       />
     ))
   }
@@ -219,23 +221,48 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
         </div>
       ) : showSplit ? (
         <div className="px-4 pb-32 max-w-md mx-auto w-full space-y-6 pt-4">
-          {offerRides.length > 0 && (
-            <section>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs font-black text-brand uppercase tracking-wider">🚗 Available Rides</span>
-                <span className="text-[10px] font-bold text-white bg-brand px-2 py-0.5 rounded-full">{offerRides.length}</span>
-              </div>
-              <div className="flex flex-col gap-3.5">{renderCards(offerRides)}</div>
-            </section>
-          )}
-          {requestRides.length > 0 && (
-            <section>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs font-black text-accent uppercase tracking-wider">🙋 Looking for a Ride</span>
-                <span className="text-[10px] font-bold text-white bg-accent px-2 py-0.5 rounded-full">{requestRides.length}</span>
-              </div>
-              <div className="flex flex-col gap-3.5">{renderCards(requestRides)}</div>
-            </section>
+          {isDriverView ? (
+            <>
+              {requestRides.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs font-black text-accent uppercase tracking-wider">🙋 Riders Looking</span>
+                    <span className="text-[10px] font-bold text-white bg-accent px-2 py-0.5 rounded-full">{requestRides.length}</span>
+                  </div>
+                  <div className="flex flex-col gap-3.5">{renderCards(requestRides)}</div>
+                </section>
+              )}
+              {offerRides.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs font-black text-brand uppercase tracking-wider">🚗 Other Drivers</span>
+                    <span className="text-[10px] font-bold text-white bg-brand px-2 py-0.5 rounded-full">{offerRides.length}</span>
+                  </div>
+                  <div className="flex flex-col gap-3.5">{renderCards(offerRides)}</div>
+                </section>
+              )}
+            </>
+          ) : (
+            <>
+              {offerRides.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs font-black text-brand uppercase tracking-wider">🚗 Available Rides</span>
+                    <span className="text-[10px] font-bold text-white bg-brand px-2 py-0.5 rounded-full">{offerRides.length}</span>
+                  </div>
+                  <div className="flex flex-col gap-3.5">{renderCards(offerRides)}</div>
+                </section>
+              )}
+              {requestRides.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs font-black text-accent uppercase tracking-wider">🙋 Looking for a Ride</span>
+                    <span className="text-[10px] font-bold text-white bg-accent px-2 py-0.5 rounded-full">{requestRides.length}</span>
+                  </div>
+                  <div className="flex flex-col gap-3.5">{renderCards(requestRides)}</div>
+                </section>
+              )}
+            </>
           )}
         </div>
       ) : (
