@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { RideWithUser, MatchRequestWithDetails } from '@/lib/types'
 import StatusBadge from './StatusBadge'
+import EditRideSheet from './EditRideSheet'
 import { formatDate, stars, timeAgo } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 
@@ -23,6 +24,7 @@ export default function MyRidesClient({ rides: initialRides, requests: initialRe
   const [selecting, setSelecting] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [deleting, setDeleting] = useState(false)
+  const [editingRide, setEditingRide] = useState<RideWithUser | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -252,6 +254,12 @@ export default function MyRidesClient({ rides: initialRides, requests: initialRe
                           </>
                         )}
                         <button
+                          onClick={() => setEditingRide(ride)}
+                          className="text-xs text-brand font-semibold hover:underline cursor-pointer"
+                        >
+                          Edit
+                        </button>
+                        <button
                           onClick={() => deleteRide(ride.id)}
                           disabled={loading === ride.id}
                           className="text-xs text-neutral-400 font-semibold disabled:opacity-50 hover:text-red-500 hover:underline cursor-pointer ml-auto"
@@ -266,6 +274,17 @@ export default function MyRidesClient({ rides: initialRides, requests: initialRe
             ))}
           </div>
         </div>
+      )}
+
+      {editingRide && (
+        <EditRideSheet
+          ride={editingRide}
+          onSave={(updated) => {
+            setRides((prev) => prev.map((r) => r.id === updated.id ? updated : r))
+            setEditingRide(null)
+          }}
+          onClose={() => setEditingRide(null)}
+        />
       )}
 
       {tab === 'requests' && (
