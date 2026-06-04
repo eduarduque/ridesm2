@@ -21,7 +21,7 @@ function statusLabel(ride: RideWithUser): { text: string; variant: 'open' | 'fil
 }
 
 function SeatDots({ seats }: { seats: number }) {
-  const MAX = 4
+  const MAX = 5
   return (
     <div className="flex items-center gap-1.5">
       {Array.from({ length: MAX }).map((_, i) => (

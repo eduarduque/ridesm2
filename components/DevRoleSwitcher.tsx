@@ -34,6 +34,7 @@ export default function DevRoleSwitcher() {
     setRole(r)
     localStorage.setItem('devRole', r)
     setOpen(false)
+    window.dispatchEvent(new CustomEvent('devRoleChange', { detail: r }))
     if (r === 'admin') router.push('/admin/feedback')
   }
 

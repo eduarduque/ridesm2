@@ -24,6 +24,25 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
   const [commutesFilter, setCommutesFilter] = useState(false)
   const [requesting, setRequesting] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [devRole, setDevRole] = useState<string | null>(null)
+
+  useEffect(() => {
+    const saved = localStorage.getItem('devRole')
+    if (saved) applyRole(saved)
+
+    function handleRoleChange(e: Event) {
+      applyRole((e as CustomEvent).detail)
+    }
+    window.addEventListener('devRoleChange', handleRoleChange)
+    return () => window.removeEventListener('devRoleChange', handleRoleChange)
+  }, [])
+
+  function applyRole(role: string) {
+    setDevRole(role)
+    if (role === 'customer') setTypeFilter('offer')
+    else if (role === 'driver') setTypeFilter('request')
+    else setTypeFilter('all')
+  }
 
   useEffect(() => {
     const supabase = createClient()
@@ -138,6 +157,13 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
         </div>
       </header>
 
+      {devRole && devRole !== 'admin' && (
+        <div className={`border-b text-xs font-bold px-4 py-2 flex items-center gap-2 ${devRole === 'customer' ? 'bg-brand/10 text-brand border-brand/20' : 'bg-accent/10 text-accent border-accent/20'}`}>
+          <span>{devRole === 'customer' ? '🙋 Customer view — browsing available rides' : '🚗 Driver view — seeing who needs a ride'}</span>
+          <span className="ml-auto font-normal opacity-60">dev only</span>
+        </div>
+      )}
+
       <div className="max-w-md w-full mx-auto">
         <FilterChips
           routeFilter={routeFilter}
@@ -175,7 +201,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
             <RideCard
               key={ride.id}
               ride={ride}
-              userId={userId}
+              userId={devRole && devRole !== 'admin' ? 'simulated-other-user' : userId}
               hasRequested={requested.has(ride.id) || requesting === ride.id}
               onRequest={handleRequest}
             />
