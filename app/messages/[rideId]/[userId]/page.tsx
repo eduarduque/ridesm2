@@ -16,16 +16,6 @@ export default async function ChatPage({ params }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Verify a match_request exists between these users for this ride
-  const { data: match } = await supabase
-    .from('match_requests')
-    .select('id')
-    .eq('ride_id', rideId)
-    .eq('status', 'accepted')
-    .or(`requester_id.eq.${user.id},requester_id.eq.${otherUserId}`)
-    .single()
-
-  // Also check the ride owner is one of the two users
   const { data: ride } = await supabase
     .from('rides')
     .select('from_city, to_city, user_id')
@@ -33,9 +23,8 @@ export default async function ChatPage({ params }: Props) {
     .single()
 
   if (!ride) notFound()
-
-  const involvedUsers = [ride.user_id, match ? otherUserId : null, user.id]
-  if (!match && !involvedUsers.includes(user.id)) redirect('/messages')
+  // Don't allow chatting with yourself
+  if (ride.user_id === user.id && otherUserId === user.id) redirect('/')
 
   // Fetch other user's profile
   const { data: otherUser } = await supabase

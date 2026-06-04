@@ -39,9 +39,6 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
 
   function applyRole(role: string) {
     setDevRole(role)
-    if (role === 'customer') setTypeFilter('offer')
-    else if (role === 'driver') setTypeFilter('request')
-    else setTypeFilter('all')
   }
 
   useEffect(() => {
@@ -135,6 +132,8 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
   const requestRides = visible.filter((r) => r.type === 'request')
   const openCount = visible.length
   const showSplit = typeFilter === 'all'
+  const showOffersSection = showSplit && devRole !== 'driver'
+  const showRequestsSection = showSplit && devRole !== 'customer'
 
   function renderCards(list: typeof visible) {
     return list.map((ride) => (
@@ -219,7 +218,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
         </div>
       ) : showSplit ? (
         <div className="px-4 pb-32 max-w-md mx-auto w-full space-y-6 pt-4">
-          {offerRides.length > 0 && (
+          {showOffersSection && offerRides.length > 0 && (
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-xs font-black text-brand uppercase tracking-wider">🚗 Available Rides</span>
@@ -228,7 +227,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
               <div className="flex flex-col gap-3.5">{renderCards(offerRides)}</div>
             </section>
           )}
-          {requestRides.length > 0 && (
+          {showRequestsSection && requestRides.length > 0 && (
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-xs font-black text-accent uppercase tracking-wider">🙋 Looking for a Ride</span>

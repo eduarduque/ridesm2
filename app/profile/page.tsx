@@ -17,5 +17,7 @@ export default async function ProfilePage() {
 
   if (!profile) redirect('/onboarding')
 
-  return <ProfileClient profile={profile} />
+  const isAdmin = user.email === 'eduarduque_18@hotmail.com'
+
+  return <ProfileClient profile={profile} isAdmin={isAdmin} />
 }
