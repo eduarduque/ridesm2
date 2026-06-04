@@ -53,7 +53,7 @@ export default function MyRidesClient({ rides: initialRides, requests: initialRe
       const req = requests.find((r) => r.id === reqId)
       if (req?.ride_id) {
         const currentRide = rides.find((r) => r.id === req.ride_id) ?? req.rides
-        const newSeats = Math.max(0, currentRide.seats - 1)
+        const newSeats = Math.max(0, currentRide.seats - (req.seats_requested ?? 1))
         const newStatus = newSeats === 0 ? 'matched' : 'filling'
         await supabase.from('rides').update({ seats: newSeats, status: newStatus }).eq('id', req.ride_id)
         setRides((prev) =>
@@ -62,6 +62,18 @@ export default function MyRidesClient({ rides: initialRides, requests: initialRe
       }
       router.refresh()
     }
+    setLoading(null)
+  }
+
+  async function adjustSeats(rideId: string, delta: number) {
+    const ride = rides.find((r) => r.id === rideId)
+    if (!ride) return
+    const newSeats = Math.min(8, Math.max(0, ride.seats + delta))
+    const newStatus = newSeats === 0 ? 'matched' : ride.status === 'matched' ? 'filling' : ride.status
+    setLoading(rideId)
+    const supabase = createClient()
+    await supabase.from('rides').update({ seats: newSeats, status: newStatus }).eq('id', rideId)
+    setRides((prev) => prev.map((r) => r.id === rideId ? { ...r, seats: newSeats, status: newStatus } : r))
     setLoading(null)
   }
 
@@ -253,6 +265,23 @@ export default function MyRidesClient({ rides: initialRides, requests: initialRe
                             </button>
                           </>
                         )}
+                        {(ride.status === 'open' || ride.status === 'filling' || ride.status === 'matched') && (
+                          <div className="flex items-center gap-1.5 ml-1">
+                            <button
+                              onClick={() => adjustSeats(ride.id, -1)}
+                              disabled={loading === ride.id || ride.seats === 0}
+                              className="w-5 h-5 rounded-full border border-neutral-300 text-neutral-500 text-xs font-bold flex items-center justify-center disabled:opacity-30 hover:border-neutral-500 cursor-pointer"
+                            >−</button>
+                            <span className="text-[11px] font-semibold text-neutral-600 w-14 text-center">
+                              {ride.seats} seat{ride.seats !== 1 ? 's' : ''}
+                            </span>
+                            <button
+                              onClick={() => adjustSeats(ride.id, 1)}
+                              disabled={loading === ride.id || ride.seats >= 8}
+                              className="w-5 h-5 rounded-full border border-neutral-300 text-neutral-500 text-xs font-bold flex items-center justify-center disabled:opacity-30 hover:border-neutral-500 cursor-pointer"
+                            >+</button>
+                          </div>
+                        )}
                         <button
                           onClick={() => setEditingRide(ride)}
                           className="text-xs text-brand font-semibold hover:underline cursor-pointer"
@@ -308,6 +337,9 @@ export default function MyRidesClient({ rides: initialRides, requests: initialRe
                   <p className="text-[11px] text-amber-500 flex items-center gap-0.5">
                     {stars(req.users?.rating ?? 5)}{' '}
                     <span className="text-neutral-400 font-medium">{(req.users?.rating ?? 5).toFixed(1)}</span>
+                  </p>
+                  <p className="text-[11px] font-bold text-brand mt-0.5">
+                    wants {req.seats_requested ?? 1} seat{(req.seats_requested ?? 1) !== 1 ? 's' : ''}
                   </p>
                 </div>
                 <div className="ml-auto text-right">

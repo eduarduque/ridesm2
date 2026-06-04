@@ -40,6 +40,7 @@ export interface MatchRequest {
   ride_id: string
   requester_id: string
   status: MatchStatus
+  seats_requested: number
   created_at: string
 }
 

@@ -8,7 +8,7 @@ interface Props {
   ride: RideWithUser
   userId: string | null
   hasRequested: boolean
-  onRequest: (rideId: string) => void
+  onRequestSeats: (ride: RideWithUser) => void
   devMode?: boolean
   devRole?: string
 }
@@ -41,9 +41,8 @@ function SeatDots({ seats }: { seats: number }) {
   )
 }
 
-export default function RideCard({ ride, userId, hasRequested, onRequest, devMode, devRole }: Props) {
+export default function RideCard({ ride, userId, hasRequested, onRequestSeats, devMode, devRole }: Props) {
   const isOwn = !devMode && ride.user_id === userId
-  const canAct = userId && !isOwn && (ride.status === 'open' || ride.status === 'filling')
   const isOffer = ride.type === 'offer'
   const isUrgent = ride.is_now
   const status = statusLabel(ride)
@@ -79,23 +78,33 @@ export default function RideCard({ ride, userId, hasRequested, onRequest, devMod
         Closed
       </div>
     )
+    if (hasRequested) return (
+      <div className="flex gap-1.5">
+        <div className="flex-1 text-center py-2 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-lg border border-emerald-200">
+          ✓ Request pending
+        </div>
+        <Link
+          href={`/messages/${ride.id}/${ride.user_id}`}
+          className={`px-3 py-2 rounded-lg text-xs font-bold text-white transition-colors ${isOffer ? 'bg-brand hover:bg-brand-dark' : 'bg-accent hover:bg-teal-700'}`}
+        >
+          Chat
+        </Link>
+      </div>
+    )
 
-    const msgLabel =
-      devRole === 'customer' ? (isOffer ? 'Message driver' : 'Join request') :
-      devRole === 'driver'   ? (isOffer ? 'Offer a seat'   : 'Message rider') :
-      'Message'
+    const btnLabel =
+      devRole === 'customer' ? (isOffer ? 'Request seats' : 'Join request') :
+      devRole === 'driver'   ? (isOffer ? 'Request seats' : 'Request rider') :
+      isOffer ? 'Request seats' : 'Join request'
 
     return (
       <div className="flex gap-1.5">
-        <Link
-          href={`/messages/${ride.id}/${ride.user_id}`}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold text-white shadow-sm transition-colors ${isOffer ? 'bg-brand hover:bg-brand-dark' : 'bg-accent hover:bg-teal-700'}`}
+        <button
+          onClick={() => onRequestSeats(ride)}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold text-white shadow-sm transition-colors cursor-pointer ${isOffer ? 'bg-brand hover:bg-brand-dark' : 'bg-accent hover:bg-teal-700'}`}
         >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.068.157 2.148.279 3.238.364.466.037.893.281 1.153.671L12 21l2.652-3.978c.26-.39.687-.634 1.153-.67 1.09-.086 2.17-.208 3.238-.365 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
-          </svg>
-          {msgLabel}
-        </Link>
+          {btnLabel}
+        </button>
         {phone && (
           <a
             href={`tel:${phone}`}

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { RideWithUser } from '@/lib/types'
 import FilterChips from './FilterChips'
 import RideCard from './RideCard'
+import SeatRequestSheet from './SeatRequestSheet'
 import { todayISO, tomorrowISO } from '@/lib/utils'
 
 interface Props {
@@ -22,7 +23,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
   const [timeFilter, setTimeFilter] = useState('all')
   const [luggageFilter, setLuggageFilter] = useState(false)
   const [commutesFilter, setCommutesFilter] = useState(false)
-  const [requesting, setRequesting] = useState<string | null>(null)
+  const [requestingRide, setRequestingRide] = useState<RideWithUser | null>(null)
   const [error, setError] = useState('')
   const [devRole, setDevRole] = useState<string | null>(null)
 
@@ -71,21 +72,9 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
     return () => { supabase.removeChannel(channel) }
   }, [])
 
-  async function handleRequest(rideId: string) {
+  function handleRequestSeats(ride: RideWithUser) {
     if (!userId) { window.location.href = '/login'; return }
-    setRequesting(rideId)
-    setError('')
-    const supabase = createClient()
-    const { error } = await supabase.from('match_requests').insert({
-      ride_id: rideId,
-      requester_id: userId,
-    })
-    if (error) {
-      setError(error.message)
-    } else {
-      setRequested((prev) => new Set([...prev, rideId]))
-    }
-    setRequesting(null)
+    setRequestingRide(ride)
   }
 
   const today = todayISO()
@@ -142,8 +131,8 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
         key={ride.id}
         ride={ride}
         userId={userId}
-        hasRequested={requested.has(ride.id) || requesting === ride.id}
-        onRequest={handleRequest}
+        hasRequested={requested.has(ride.id)}
+        onRequestSeats={handleRequestSeats}
         devMode={devMode}
         devRole={devRole ?? undefined}
       />
@@ -276,6 +265,18 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
           RideSM is a free community board. Not affiliated with any organization. Use at your own risk.
         </p>
       </div>
+
+      {requestingRide && userId && (
+        <SeatRequestSheet
+          ride={requestingRide}
+          userId={userId}
+          onSuccess={(rideId) => {
+            setRequested((prev) => new Set([...prev, rideId]))
+            setRequestingRide(null)
+          }}
+          onClose={() => setRequestingRide(null)}
+        />
+      )}
     </div>
   )
 }

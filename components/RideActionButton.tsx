@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import type { RideWithUser } from '@/lib/types'
 import Link from 'next/link'
+import SeatRequestSheet from './SeatRequestSheet'
 
 interface Props {
   ride: RideWithUser
@@ -14,30 +14,12 @@ interface Props {
 
 export default function RideActionButton({ ride, userId, hasRequested: initialHasRequested }: Props) {
   const [hasRequested, setHasRequested] = useState(initialHasRequested)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [showSheet, setShowSheet] = useState(false)
   const router = useRouter()
 
   const isOwn = ride.user_id === userId
   const canAct = !isOwn && (ride.status === 'open' || ride.status === 'filling')
   const isOffer = ride.type === 'offer'
-
-  async function handleRequest() {
-    if (!userId) { router.push('/login'); return }
-    setLoading(true)
-    setError('')
-    const supabase = createClient()
-    const { error } = await supabase.from('match_requests').insert({
-      ride_id: ride.id,
-      requester_id: userId,
-    })
-    if (error) {
-      setError(error.message)
-    } else {
-      setHasRequested(true)
-    }
-    setLoading(false)
-  }
 
   if (!userId) {
     return (
@@ -62,8 +44,16 @@ export default function RideActionButton({ ride, userId, hasRequested: initialHa
 
   if (hasRequested) {
     return (
-      <div className="w-full text-center py-4 bg-emerald-50 text-emerald-800 text-sm font-bold rounded-lg border border-emerald-200">
-        ✓ Request sent — wait for the driver to accept
+      <div className="flex gap-2">
+        <div className="flex-1 text-center py-4 bg-emerald-50 text-emerald-800 text-sm font-bold rounded-lg border border-emerald-200">
+          ✓ Request pending — waiting for response
+        </div>
+        <Link
+          href={`/messages/${ride.id}/${ride.user_id}`}
+          className={`px-4 py-4 rounded-lg text-sm font-bold text-white transition-colors ${isOffer ? 'bg-brand hover:bg-brand-dark' : 'bg-accent hover:bg-teal-700'}`}
+        >
+          Chat
+        </Link>
       </div>
     )
   }
@@ -79,19 +69,26 @@ export default function RideActionButton({ ride, userId, hasRequested: initialHa
   return (
     <>
       <button
-        onClick={handleRequest}
-        disabled={loading}
-        className={`w-full text-white font-bold py-4 rounded-lg transition-colors disabled:opacity-50 cursor-pointer ${
+        onClick={() => setShowSheet(true)}
+        className={`w-full text-white font-bold py-4 rounded-lg transition-colors cursor-pointer ${
           isOffer ? 'bg-brand hover:bg-brand-dark' : 'bg-accent hover:bg-teal-700'
         }`}
       >
-        {loading
-          ? 'Sending…'
-          : isOffer
-          ? 'Request seat'
-          : 'I can take you'}
+        {isOffer ? 'Request seats' : 'Join request'}
       </button>
-      {error && <p className="text-red-500 text-sm mt-2 text-center font-semibold">{error}</p>}
+
+      {showSheet && (
+        <SeatRequestSheet
+          ride={ride}
+          userId={userId}
+          onSuccess={() => {
+            setHasRequested(true)
+            setShowSheet(false)
+            router.push(`/messages/${ride.id}/${ride.user_id}`)
+          }}
+          onClose={() => setShowSheet(false)}
+        />
+      )}
     </>
   )
 }
