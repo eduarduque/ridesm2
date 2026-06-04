@@ -43,7 +43,6 @@ export default function RideCard({ ride, userId, hasRequested, onRequest }: Prop
   const isUrgent = ride.is_now
   const status = statusLabel(ride)
   const posterName = ride.users?.name ?? 'Anonymous'
-  const ratingValue = ride.users?.rating ?? 5.0
   const phone = ride.users?.phone
 
   const borderClass = isOffer
@@ -60,16 +59,6 @@ export default function RideCard({ ride, userId, hasRequested, onRequest }: Prop
       : status.variant === 'filling'
       ? 'bg-amber-50 text-amber-800'
       : 'bg-neutral-100 text-neutral-600'
-
-  function handleReport(e: React.MouseEvent) {
-    e.preventDefault()
-    e.stopPropagation()
-    const subject = encodeURIComponent(`RideSM Report — ride ${ride.id}`)
-    const body = encodeURIComponent(
-      `I would like to report ride ${ride.id} (${ride.from_city} → ${ride.to_city}).\n\nReason:\n`
-    )
-    window.location.href = `mailto:support@ridesm.app?subject=${subject}&body=${body}`
-  }
 
   function renderAction() {
     if (isOwn) {
@@ -149,13 +138,7 @@ export default function RideCard({ ride, userId, hasRequested, onRequest }: Prop
       <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
         <div className="flex items-center gap-2.5">
           <Avatar name={posterName} isOffer={isOffer} />
-          <div>
-            <div className="text-xs font-bold text-neutral-950 leading-tight">{posterName}</div>
-            <div className="text-[10px] text-neutral-500 flex items-center gap-1 mt-0.5 font-medium">
-              <span className="text-amber-500">★</span>
-              <span className="font-semibold text-neutral-700">{ratingValue.toFixed(1)}</span>
-            </div>
-          </div>
+          <div className="text-xs font-bold text-neutral-950 leading-tight">{posterName}</div>
         </div>
         <div className="flex flex-col items-end gap-1.5">
           <span className={`text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded ${typeTagClass}`}>
@@ -227,14 +210,7 @@ export default function RideCard({ ride, userId, hasRequested, onRequest }: Prop
       {/* Button Actions */}
       <div className="pt-2 border-t border-neutral-100 space-y-2.5">
         {renderAction()}
-        <div className="flex items-center justify-between px-0.5">
-          <button
-            type="button"
-            onClick={handleReport}
-            className="flex items-center gap-1 text-[10px] text-neutral-400 hover:text-neutral-600 transition-colors font-medium cursor-pointer"
-          >
-            <span>🚩</span> Report
-          </button>
+        <div className="flex items-center justify-end px-0.5">
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-neutral-400">{timeAgo(ride.created_at)}</span>
             <span className="text-neutral-300">·</span>
