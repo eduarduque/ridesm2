@@ -20,6 +20,9 @@ export default function MyRidesClient({ rides: initialRides, requests: initialRe
   const [requests, setRequests] = useState(initialRequests)
   const [loading, setLoading] = useState<string | null>(null)
   const [devRole, setDevRole] = useState<string | null>(null)
+  const [selecting, setSelecting] = useState(false)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [deleting, setDeleting] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -68,6 +71,35 @@ export default function MyRidesClient({ rides: initialRides, requests: initialRe
     setLoading(null)
   }
 
+  async function deleteRide(rideId: string) {
+    setLoading(rideId)
+    const supabase = createClient()
+    await supabase.from('rides').delete().eq('id', rideId)
+    setRides((prev) => prev.filter((r) => r.id !== rideId))
+    setLoading(null)
+  }
+
+  async function deleteSelected() {
+    if (selected.size === 0) return
+    setDeleting(true)
+    const ids = Array.from(selected)
+    const supabase = createClient()
+    await supabase.from('rides').delete().in('id', ids)
+    setRides((prev) => prev.filter((r) => !ids.includes(r.id)))
+    setSelected(new Set())
+    setSelecting(false)
+    setDeleting(false)
+  }
+
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
   const pendingCount = requests.filter((r) => r.status === 'pending').length
   const postsLabel = devRole === 'driver' ? 'My Offers' : 'My Posts'
   const requestsLabel = devRole === 'driver' ? 'Incoming Requests' : 'Requests'
@@ -108,54 +140,131 @@ export default function MyRidesClient({ rides: initialRides, requests: initialRe
       </div>
 
       {tab === 'posts' && (
-        <div className="divide-y divide-neutral-100">
-          {rides.length === 0 && (
-            <div className="py-16 text-center text-neutral-400 text-sm">
-              <p className="text-3xl mb-3">🚗</p>
-              <p>You haven&apos;t posted any rides yet.</p>
-              <Link href="/post" className="text-brand font-semibold text-sm mt-2 inline-block hover:underline">
-                Post a ride →
-              </Link>
+        <div>
+          {/* Select mode toolbar */}
+          {rides.length > 0 && (
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-neutral-100 bg-neutral-50/50">
+              {selecting ? (
+                <>
+                  <span className="text-xs font-semibold text-neutral-500">
+                    {selected.size} selected
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => {
+                        if (selected.size === rides.length) setSelected(new Set())
+                        else setSelected(new Set(rides.map((r) => r.id)))
+                      }}
+                      className="text-xs font-semibold text-neutral-500 hover:text-neutral-700 cursor-pointer"
+                    >
+                      {selected.size === rides.length ? 'Deselect all' : 'Select all'}
+                    </button>
+                    <button
+                      onClick={deleteSelected}
+                      disabled={selected.size === 0 || deleting}
+                      className="text-xs font-bold text-white bg-red-500 hover:bg-red-600 disabled:opacity-40 px-3 py-1 rounded-full transition-colors cursor-pointer"
+                    >
+                      {deleting ? 'Deleting…' : `Delete ${selected.size > 0 ? selected.size : ''}`}
+                    </button>
+                    <button
+                      onClick={() => { setSelecting(false); setSelected(new Set()) }}
+                      className="text-xs font-semibold text-neutral-400 hover:text-neutral-600 cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span className="text-xs text-neutral-400">{rides.length} post{rides.length !== 1 ? 's' : ''}</span>
+                  <button
+                    onClick={() => setSelecting(true)}
+                    className="text-xs font-semibold text-neutral-500 hover:text-neutral-700 cursor-pointer"
+                  >
+                    Select
+                  </button>
+                </>
+              )}
             </div>
           )}
-          {rides.map((ride) => (
-            <div key={ride.id} className="px-4 py-5 hover:bg-neutral-50/50 transition-colors">
-              <div className="flex items-start justify-between mb-1.5">
-                <h3 className="font-bold text-neutral-900 text-[15px]">
-                  {ride.from_city} → {ride.to_city}
-                </h3>
-                <StatusBadge status={ride.status} />
+
+          <div className="divide-y divide-neutral-100">
+            {rides.length === 0 && (
+              <div className="py-16 text-center text-neutral-400 text-sm">
+                <p className="text-3xl mb-3">🚗</p>
+                <p>You haven&apos;t posted any rides yet.</p>
+                <Link href="/post" className="text-brand font-semibold text-sm mt-2 inline-block hover:underline">
+                  Post a ride →
+                </Link>
               </div>
-              <p className="text-xs text-neutral-500 mb-1">
-                {ride.is_now ? '🟢 Right now' : formatDate(ride.depart_date, ride.depart_time_start)}
-                {' · '}{ride.seats} seat{ride.seats !== 1 ? 's' : ''}
-              </p>
-              <p className="text-[10px] text-neutral-400">{timeAgo(ride.created_at)}</p>
-              {ride.note && (
-                <p className="text-xs text-neutral-600 mt-2 bg-neutral-50 p-2 rounded border border-neutral-100 italic">
-                  &ldquo;{ride.note}&rdquo;
-                </p>
-              )}
-              {(ride.status === 'open' || ride.status === 'filling') && (
-                <div className="flex items-center gap-4 mt-3">
-                  <button
-                    onClick={() => cancelRide(ride.id)}
-                    disabled={loading === ride.id}
-                    className="text-xs text-red-600 font-semibold disabled:opacity-50 hover:underline cursor-pointer"
-                  >
-                    {loading === ride.id ? 'Updating…' : 'Cancel ride'}
-                  </button>
-                  <button
-                    onClick={() => markFull(ride.id)}
-                    disabled={loading === ride.id}
-                    className="text-xs text-amber-600 font-semibold disabled:opacity-50 hover:underline cursor-pointer"
-                  >
-                    Mark as Full
-                  </button>
+            )}
+            {rides.map((ride) => (
+              <div
+                key={ride.id}
+                onClick={selecting ? () => toggleSelect(ride.id) : undefined}
+                className={`px-4 py-4 transition-colors ${selecting ? 'cursor-pointer' : 'hover:bg-neutral-50/50'} ${selecting && selected.has(ride.id) ? 'bg-red-50' : ''}`}
+              >
+                <div className="flex items-start gap-3">
+                  {selecting && (
+                    <div className={`mt-0.5 w-4 h-4 rounded border-2 shrink-0 flex items-center justify-center transition-colors ${selected.has(ride.id) ? 'bg-red-500 border-red-500' : 'border-neutral-300'}`}>
+                      {selected.has(ride.id) && (
+                        <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                        </svg>
+                      )}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between mb-1">
+                      <h3 className="font-bold text-neutral-900 text-[15px]">
+                        {ride.from_city} → {ride.to_city}
+                      </h3>
+                      <StatusBadge status={ride.status} />
+                    </div>
+                    <p className="text-xs text-neutral-500 mb-0.5">
+                      {ride.is_now ? '🟢 Right now' : formatDate(ride.depart_date, ride.depart_time_start)}
+                      {' · '}{ride.seats} seat{ride.seats !== 1 ? 's' : ''}
+                    </p>
+                    <p className="text-[10px] text-neutral-400">{timeAgo(ride.created_at)}</p>
+                    {ride.note && (
+                      <p className="text-xs text-neutral-600 mt-1.5 bg-neutral-50 p-2 rounded border border-neutral-100 italic">
+                        &ldquo;{ride.note}&rdquo;
+                      </p>
+                    )}
+                    {!selecting && (
+                      <div className="flex items-center gap-4 mt-2.5">
+                        {(ride.status === 'open' || ride.status === 'filling') && (
+                          <>
+                            <button
+                              onClick={() => cancelRide(ride.id)}
+                              disabled={loading === ride.id}
+                              className="text-xs text-red-600 font-semibold disabled:opacity-50 hover:underline cursor-pointer"
+                            >
+                              {loading === ride.id ? 'Updating…' : 'Cancel'}
+                            </button>
+                            <button
+                              onClick={() => markFull(ride.id)}
+                              disabled={loading === ride.id}
+                              className="text-xs text-amber-600 font-semibold disabled:opacity-50 hover:underline cursor-pointer"
+                            >
+                              Mark as Full
+                            </button>
+                          </>
+                        )}
+                        <button
+                          onClick={() => deleteRide(ride.id)}
+                          disabled={loading === ride.id}
+                          className="text-xs text-neutral-400 font-semibold disabled:opacity-50 hover:text-red-500 hover:underline cursor-pointer ml-auto"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-          ))}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
