@@ -13,7 +13,9 @@ type WhenOption = 'now' | 'today' | 'tomorrow' | 'pick'
 export default function PostPage() {
   const [rideType, setRideType] = useState<RideType>('offer')
   const [fromCity, setFromCity] = useState('')
+  const [fromCityCustom, setFromCityCustom] = useState('')
   const [toCity, setToCity] = useState('')
+  const [toCityCustom, setToCityCustom] = useState('')
   const [whenOption, setWhenOption] = useState<WhenOption>('today')
   const [pickDate, setPickDate] = useState('')
   const [pickTime, setPickTime] = useState('')
@@ -25,9 +27,14 @@ export default function PostPage() {
   const [error, setError] = useState('')
   const router = useRouter()
 
+  const resolvedFrom = fromCity === 'Other' ? fromCityCustom.trim() : fromCity
+  const resolvedTo = toCity === 'Other' ? toCityCustom.trim() : toCity
+
   async function handleSubmit() {
-    if (!fromCity || !toCity) { setError('Please select From and To cities.'); return }
-    if (fromCity === toCity) { setError('From and To must be different cities.'); return }
+    if (!resolvedFrom || !resolvedTo) { setError('Please select From and To cities.'); return }
+    if (fromCity === 'Other' && !fromCityCustom.trim()) { setError('Please specify the "From" city.'); return }
+    if (toCity === 'Other' && !toCityCustom.trim()) { setError('Please specify the "To" city.'); return }
+    if (resolvedFrom === resolvedTo) { setError('From and To must be different cities.'); return }
     if (whenOption === 'pick' && !pickDate) { setError('Please pick a date.'); return }
     if (needsTerms && !agreedTerms) { setError('Please agree to the terms to post.'); return }
 
@@ -67,8 +74,8 @@ export default function PostPage() {
     const { error: insertError } = await supabase.from('rides').insert({
       user_id: user.id,
       type: rideType,
-      from_city: fromCity,
-      to_city: toCity,
+      from_city: resolvedFrom,
+      to_city: resolvedTo,
       is_now: isNow,
       depart_date: isNow ? null : departDate,
       depart_time_start: isNow ? null : pickTime || null,
@@ -124,23 +131,42 @@ export default function PostPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">From</label>
             <select
               value={fromCity}
-              onChange={(e) => setFromCity(e.target.value)}
+              onChange={(e) => { setFromCity(e.target.value); setFromCityCustom('') }}
               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-white"
             >
               <option value="">Select…</option>
               {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
+            {fromCity === 'Other' && (
+              <input
+                type="text"
+                placeholder="City name"
+                value={fromCityCustom}
+                onChange={(e) => setFromCityCustom(e.target.value.slice(0, 50))}
+                className="w-full mt-2 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                autoFocus
+              />
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">To</label>
             <select
               value={toCity}
-              onChange={(e) => setToCity(e.target.value)}
+              onChange={(e) => { setToCity(e.target.value); setToCityCustom('') }}
               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-white"
             >
               <option value="">Select…</option>
               {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
+            {toCity === 'Other' && (
+              <input
+                type="text"
+                placeholder="City name"
+                value={toCityCustom}
+                onChange={(e) => setToCityCustom(e.target.value.slice(0, 50))}
+                className="w-full mt-2 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+            )}
           </div>
         </div>
 
