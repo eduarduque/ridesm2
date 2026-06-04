@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-const RATE_LIMIT_SECONDS = 60
+// Backoff ladder: 1 min → 5 min → tell them to wait an hour
+const COOLDOWNS = [60, 300]
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -11,14 +12,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [cooldown, setCooldown] = useState(0)
+  const [rateLimitHits, setRateLimitHits] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     return () => { if (timerRef.current) clearInterval(timerRef.current) }
   }, [])
 
-  function startCooldown() {
-    setCooldown(RATE_LIMIT_SECONDS)
+  function startCooldown(seconds: number) {
+    setCooldown(seconds)
     timerRef.current = setInterval(() => {
       setCooldown((s) => {
         if (s <= 1) {
@@ -42,8 +44,13 @@ export default function LoginPage() {
     })
     if (error) {
       if (error.message.toLowerCase().includes('rate limit')) {
-        setError('')
-        startCooldown()
+        const hits = rateLimitHits + 1
+        setRateLimitHits(hits)
+        if (hits > COOLDOWNS.length) {
+          setError('You've hit the limit for now. Please wait about an hour before trying again.')
+        } else {
+          startCooldown(COOLDOWNS[hits - 1])
+        }
       } else {
         setError(error.message)
       }
@@ -52,6 +59,11 @@ export default function LoginPage() {
     }
     setLoading(false)
   }
+
+  const mins = Math.ceil(cooldown / 60)
+  const cooldownLabel = cooldown >= 60
+    ? `${mins} min${mins > 1 ? 's' : ''} ${cooldown % 60 > 0 ? `${cooldown % 60}s` : ''}`.trim()
+    : `${cooldown}s`
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-white">
@@ -92,7 +104,7 @@ export default function LoginPage() {
             {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
             {cooldown > 0 && (
               <p className="text-amber-600 text-sm mb-4 text-center">
-                Too many attempts — try again in <strong>{cooldown}s</strong>
+                Too many attempts — try again in <strong>{cooldownLabel}</strong>
               </p>
             )}
             <button
@@ -100,7 +112,7 @@ export default function LoginPage() {
               disabled={loading || !email.trim() || cooldown > 0}
               className="w-full bg-brand text-white font-semibold py-3 rounded-xl disabled:opacity-50"
             >
-              {loading ? 'Sending…' : cooldown > 0 ? `Wait ${cooldown}s` : 'Send magic link'}
+              {loading ? 'Sending…' : cooldown > 0 ? `Wait ${cooldownLabel}` : 'Send magic link'}
             </button>
             <p className="text-center text-xs text-gray-400 mt-4">
               We'll email you a link — no password needed.
