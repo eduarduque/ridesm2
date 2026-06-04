@@ -62,6 +62,15 @@ CREATE TABLE IF NOT EXISTS public.ratings (
   UNIQUE(ride_id, rater_id, rated_id)
 );
 
+CREATE TABLE IF NOT EXISTS public.feedback (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
+  user_email TEXT,
+  category TEXT DEFAULT 'general' CHECK (category IN ('bug', 'suggestion', 'general')),
+  message TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- ============================================================
 -- INDEXES
 -- ============================================================
@@ -126,6 +135,12 @@ CREATE POLICY "messages_update" ON public.messages FOR UPDATE
 -- ratings: anyone can read; authenticated users can insert once per ride pair
 CREATE POLICY "ratings_select" ON public.ratings FOR SELECT USING (true);
 CREATE POLICY "ratings_insert" ON public.ratings FOR INSERT WITH CHECK (auth.uid() = rater_id);
+
+-- feedback: authenticated users can submit; only admin email can read
+ALTER TABLE public.feedback ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "feedback_insert" ON public.feedback FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "feedback_select_admin" ON public.feedback FOR SELECT
+  USING ((auth.jwt() ->> 'email') = 'eduarduque_18@hotmail.com');
 
 -- ============================================================
 -- AUTO-EXPIRY SQL  (schedule this as a cron job)

@@ -218,7 +218,7 @@ export default function PostPage() {
           <div>
             <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Seats available</p>
             <div className="flex gap-2">
-              {[1, 2, 3, 4].map((n) => (
+              {[1, 2, 3, 4, 5].map((n) => (
                 <button
                   key={n}
                   onClick={() => setSeats(n)}
@@ -276,19 +276,18 @@ export default function PostPage() {
         </div>
 
         {/* Luggage */}
-        <div>
-          <label className="flex items-center justify-between cursor-pointer">
-            <div>
-              <p className="text-sm font-bold text-neutral-800">🧳 Space for luggage</p>
-              <p className="text-xs text-neutral-400 font-medium">Check this if you can carry bags or boxes</p>
-            </div>
-            <button
-              onClick={() => setHasLuggageSpace((v) => !v)}
-              className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${hasLuggageSpace ? 'bg-brand' : 'bg-neutral-200'}`}
-            >
-              <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${hasLuggageSpace ? 'translate-x-6' : 'translate-x-0.5'}`} />
-            </button>
-          </label>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-bold text-neutral-800">🧳 Space for luggage</p>
+            <p className="text-xs text-neutral-400 font-medium">Check this if you can carry bags or boxes</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setHasLuggageSpace((v) => !v)}
+            className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${hasLuggageSpace ? 'bg-brand' : 'bg-neutral-200'}`}
+          >
+            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${hasLuggageSpace ? 'translate-x-6' : 'translate-x-0.5'}`} />
+          </button>
         </div>
 
         {/* Note */}
