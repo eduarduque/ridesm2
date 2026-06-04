@@ -47,7 +47,7 @@ export default function LoginPage() {
         const hits = rateLimitHits + 1
         setRateLimitHits(hits)
         if (hits > COOLDOWNS.length) {
-          setError('You've hit the limit for now. Please wait about an hour before trying again.')
+          setError("You've hit the limit for now. Please wait about an hour before trying again.")
         } else {
           startCooldown(COOLDOWNS[hits - 1])
         }
