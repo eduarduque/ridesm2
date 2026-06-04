@@ -95,9 +95,9 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
   })
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="px-4 pt-6 pb-2">
+      <div className="px-4 pt-6 pb-2 bg-white border-b border-gray-100">
         <h1 className="text-xl font-bold text-brand">RideSM</h1>
         <p className="text-xs text-gray-400">SM · Austin · Dallas corridor</p>
       </div>
@@ -122,7 +122,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
           <p className="text-xs">Be the first — tap + to post</p>
         </div>
       ) : (
-        <div className="divide-y divide-gray-100 pb-20">
+        <div className="px-4 py-4 space-y-3 pb-24">
           {visible.map((ride) => (
             <RideCard
               key={ride.id}
