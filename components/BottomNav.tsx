@@ -2,8 +2,6 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 
 const HIDDEN_ON = ['/login', '/terms']
 
@@ -31,20 +29,6 @@ function ListIcon({ active }: { active: boolean }) {
   )
 }
 
-function ChatIcon({ active, badge }: { active: boolean; badge: number }) {
-  return (
-    <div className="relative">
-      <svg className={`w-5 h-5 ${active ? 'text-brand' : 'text-neutral-400'}`} fill="none" stroke="currentColor" strokeWidth={active ? 2.5 : 1.5} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.068.157 2.148.279 3.238.364.466.037.893.281 1.153.671L12 21l2.652-3.978c.26-.39.687-.634 1.153-.67 1.09-.086 2.17-.208 3.238-.365 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
-      </svg>
-      {badge > 0 && (
-        <span className="absolute -top-1.5 -right-1.5 bg-brand text-white text-[9px] min-w-[16px] h-[16px] rounded-full flex items-center justify-center leading-none font-bold px-1 ring-1 ring-white">
-          {badge > 9 ? '9+' : badge}
-        </span>
-      )}
-    </div>
-  )
-}
 
 function PersonIcon({ active }: { active: boolean }) {
   return (
@@ -78,50 +62,6 @@ function NavItem({
 
 export default function BottomNav() {
   const pathname = usePathname()
-  const [unread, setUnread] = useState(0)
-
-  useEffect(() => {
-    const supabase = createClient()
-
-    async function init() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      const { count } = await supabase
-        .from('messages')
-        .select('id', { count: 'exact', head: true })
-        .eq('receiver_id', user.id)
-        .is('read_at', null)
-      setUnread(count ?? 0)
-
-      const channel = supabase
-        .channel('unread-badge')
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `receiver_id=eq.${user.id}`,
-        }, () => setUnread(n => n + 1))
-        .on('postgres_changes', {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'messages',
-          filter: `receiver_id=eq.${user.id}`,
-        }, () => {
-          supabase
-            .from('messages')
-            .select('id', { count: 'exact', head: true })
-            .eq('receiver_id', user.id)
-            .is('read_at', null)
-            .then(({ count }) => setUnread(count ?? 0))
-        })
-        .subscribe()
-
-      return () => { supabase.removeChannel(channel) }
-    }
-
-    init()
-  }, [])
 
   if (HIDDEN_ON.includes(pathname)) return null
 
@@ -148,13 +88,6 @@ export default function BottomNav() {
           </div>
           <span className="text-[10px] font-medium text-neutral-400 mt-1">Post</span>
         </Link>
-
-        <NavItem
-          href="/messages"
-          active={pathname.startsWith('/messages')}
-          label="Inbox"
-          icon={<ChatIcon active={pathname.startsWith('/messages')} badge={unread} />}
-        />
 
         <NavItem
           href="/profile"

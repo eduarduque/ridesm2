@@ -6,76 +6,46 @@ import { createClient } from '@/lib/supabase/client'
 import type { RideWithUser } from '@/lib/types'
 import FilterChips from './FilterChips'
 import RideCard from './RideCard'
-import SeatRequestSheet from './SeatRequestSheet'
-import { todayISO, tomorrowISO, groupByTime } from '@/lib/utils'
+import { todayISO, tomorrowISO } from '@/lib/utils'
+
+type MainTab = 'now' | 'offering' | 'requesting'
 
 interface Props {
   initialRides: RideWithUser[]
   userId: string | null
-  requestedRideIds: string[]
 }
 
-export default function FeedClient({ initialRides, userId, requestedRideIds }: Props) {
+export default function FeedClient({ initialRides, userId }: Props) {
   const [rides, setRides] = useState<RideWithUser[]>(initialRides)
-  const [requested, setRequested] = useState(new Set(requestedRideIds))
+  const [mainTab, setMainTab] = useState<MainTab>('offering')
   const [routeFilter, setRouteFilter] = useState('all')
-  const [typeFilter, setTypeFilter] = useState('all')
   const [timeFilter, setTimeFilter] = useState('all')
   const [luggageFilter, setLuggageFilter] = useState(false)
   const [commutesFilter, setCommutesFilter] = useState(false)
-  const [requestingRide, setRequestingRide] = useState<RideWithUser | null>(null)
-  const [error, setError] = useState('')
-  const [devRole, setDevRole] = useState<string | null>(null)
-
-  useEffect(() => {
-    const saved = localStorage.getItem('devRole')
-    if (saved) applyRole(saved)
-
-    function handleRoleChange(e: Event) {
-      applyRole((e as CustomEvent).detail)
-    }
-    window.addEventListener('devRoleChange', handleRoleChange)
-    return () => window.removeEventListener('devRoleChange', handleRoleChange)
-  }, [])
-
-  function applyRole(role: string) {
-    setDevRole(role)
-  }
 
   useEffect(() => {
     const supabase = createClient()
     const channel = supabase
       .channel('rides-feed')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'rides' },
-        async (payload) => {
-          if (payload.eventType === 'INSERT') {
-            const { data } = await supabase
-              .from('rides')
-              .select('*, users(id, name, rating, phone)')
-              .eq('id', (payload.new as { id: string }).id)
-              .single()
-            if (data) setRides((prev) => [data as RideWithUser, ...prev])
-          } else if (payload.eventType === 'UPDATE') {
-            setRides((prev) =>
-              prev.map((r) =>
-                r.id === (payload.new as { id: string }).id ? { ...r, ...(payload.new as RideWithUser) } : r
-              )
-            )
-          } else if (payload.eventType === 'DELETE') {
-            setRides((prev) => prev.filter((r) => r.id !== (payload.old as { id: string }).id))
-          }
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'rides' }, async (payload) => {
+        if (payload.eventType === 'INSERT') {
+          const { data } = await supabase
+            .from('rides')
+            .select('*, users(id, name, rating, phone)')
+            .eq('id', (payload.new as { id: string }).id)
+            .single()
+          if (data) setRides((prev) => [data as RideWithUser, ...prev])
+        } else if (payload.eventType === 'UPDATE') {
+          setRides((prev) =>
+            prev.map((r) => r.id === (payload.new as { id: string }).id ? { ...r, ...(payload.new as RideWithUser) } : r)
+          )
+        } else if (payload.eventType === 'DELETE') {
+          setRides((prev) => prev.filter((r) => r.id !== (payload.old as { id: string }).id))
         }
-      )
+      })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
   }, [])
-
-  function handleRequestSeats(ride: RideWithUser) {
-    if (!userId) { window.location.href = '/login'; return }
-    setRequestingRide(ride)
-  }
 
   const today = todayISO()
   const tomorrow = tomorrowISO()
@@ -83,7 +53,6 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
   const sorted = [...rides].sort((a, b) => {
     if (a.is_now && !b.is_now) return -1
     if (!a.is_now && b.is_now) return 1
-    if (a.is_now && b.is_now) return 0
     if (!a.depart_date && !b.depart_date) return 0
     if (!a.depart_date) return 1
     if (!b.depart_date) return -1
@@ -95,13 +64,16 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
   const visible = sorted.filter((ride) => {
     if (ride.status !== 'open' && ride.status !== 'filling') return false
 
-    // Client-side expiry: today's rides where the set departure time has passed
     if (!ride.is_now && ride.depart_date === today && ride.depart_time_start) {
       const departure = new Date(`${ride.depart_date}T${ride.depart_time_start}`)
       if (departure < new Date()) return false
     }
 
-    if (typeFilter !== 'all' && ride.type !== typeFilter) return false
+    // Main tab filter
+    if (mainTab === 'now' && !ride.is_now) return false
+    if (mainTab === 'offering' && (ride.type !== 'offer' || ride.is_now)) return false
+    if (mainTab === 'requesting' && (ride.type !== 'request' || ride.is_now)) return false
+
     if (luggageFilter && !ride.has_luggage_space) return false
     if (commutesFilter && !ride.is_recurring) return false
 
@@ -117,59 +89,27 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
     return true
   })
 
-  const offerRides = visible.filter((r) => r.type === 'offer')
-  const requestRides = visible.filter((r) => r.type === 'request')
-  const openCount = visible.length
-  const showSplit = typeFilter === 'all'
+  const nowCount = sorted.filter(r => r.is_now && (r.status === 'open' || r.status === 'filling')).length
 
-  const devMode = !!(devRole && devRole !== 'admin')
-  const isDriverView = devRole === 'driver'
-
-  function renderCard(ride: RideWithUser) {
-    return (
-      <RideCard
-        key={ride.id}
-        ride={ride}
-        userId={userId}
-        hasRequested={requested.has(ride.id)}
-        onRequestSeats={handleRequestSeats}
-        devMode={devMode}
-        devRole={devRole ?? undefined}
-      />
-    )
-  }
-
-  function renderGrouped(list: typeof visible) {
-    const groups = groupByTime(list)
-    return groups.map((group) => (
-      <div key={group.key}>
-        <div className="flex items-center gap-2 mb-2 mt-1">
-          <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">{group.label}</span>
-          <div className="flex-1 h-px bg-neutral-200/70" />
-        </div>
-        <div className="flex flex-col gap-2.5">
-          {group.rides.map(renderCard)}
-        </div>
-      </div>
-    ))
-  }
+  const TABS: { key: MainTab; label: string }[] = [
+    { key: 'now', label: 'Right Now' },
+    { key: 'offering', label: 'Offering' },
+    { key: 'requesting', label: 'Requesting' },
+  ]
 
   return (
     <div className="flex flex-col min-h-screen bg-neutral-50">
+      {/* Header */}
       <header className="bg-white border-b border-neutral-200/50">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-extrabold tracking-tight text-brand">
-              RideSM
-            </h1>
-            <p className="text-[10px] text-neutral-500 font-semibold mt-0.5">
-              Community Carpool Board
-            </p>
+            <h1 className="text-xl font-extrabold tracking-tight text-brand">RideSM</h1>
+            <p className="text-[10px] text-neutral-500 font-semibold mt-0.5">Community Carpool Board</p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {openCount > 0 && (
-              <span className="text-[9px] font-black text-white bg-brand px-2.5 py-1 rounded-full uppercase tracking-wider">
-                {openCount} active
+          <div className="flex items-center gap-2">
+            {nowCount > 0 && (
+              <span className="text-[9px] font-black text-white bg-red-500 px-2.5 py-1 rounded-full uppercase tracking-wider animate-pulse">
+                {nowCount} now
               </span>
             )}
             <Link
@@ -183,21 +123,35 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
             </Link>
           </div>
         </div>
+
+        {/* Main tabs */}
+        <div className="flex max-w-md mx-auto px-4 gap-0 border-t border-neutral-100">
+          {TABS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setMainTab(tab.key)}
+              className={`flex-1 py-2.5 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
+                mainTab === tab.key
+                  ? 'border-brand text-brand'
+                  : 'border-transparent text-neutral-400 hover:text-neutral-600'
+              }`}
+            >
+              {tab.label}
+              {tab.key === 'now' && nowCount > 0 && (
+                <span className="ml-1 bg-red-500 text-white text-[8px] font-black px-1 py-0.5 rounded-full">{nowCount}</span>
+              )}
+            </button>
+          ))}
+        </div>
       </header>
 
-      {devRole && devRole !== 'admin' && (
-        <div className={`border-b text-xs font-bold px-4 py-2 flex items-center gap-2 ${devRole === 'customer' ? 'bg-brand/10 text-brand border-brand/20' : 'bg-accent/10 text-accent border-accent/20'}`}>
-          <span>{devRole === 'customer' ? '🙋 Customer view — browsing available rides' : '🚗 Driver view — seeing who needs a ride'}</span>
-          <span className="ml-auto font-normal opacity-60">dev only</span>
-        </div>
-      )}
-
+      {/* Filters */}
       <div className="max-w-md w-full mx-auto">
         <FilterChips
           routeFilter={routeFilter}
           onRouteChange={setRouteFilter}
-          typeFilter={typeFilter}
-          onTypeChange={setTypeFilter}
+          typeFilter="all"
+          onTypeChange={() => {}}
           timeFilter={timeFilter}
           onTimeChange={setTimeFilter}
           luggageFilter={luggageFilter}
@@ -207,71 +161,22 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
         />
       </div>
 
-      {error && (
-        <div className="max-w-md mx-auto w-full px-4 mt-3">
-          <div className="p-3 bg-red-50 text-red-600 text-xs font-semibold rounded-lg border border-red-100">
-            {error}
-          </div>
-        </div>
-      )}
-
+      {/* Cards */}
       {visible.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-3 text-neutral-400 pb-24 px-6 mt-10">
           <div className="w-16 h-16 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-3xl shadow-sm">
-            🚗
+            {mainTab === 'now' ? '⚡' : mainTab === 'offering' ? '🚗' : '🙋'}
           </div>
-          <p className="text-sm font-semibold text-neutral-700">No rides match your filters</p>
-          <p className="text-xs text-neutral-400">Be the first — tap Post to share a ride</p>
-        </div>
-      ) : showSplit ? (
-        <div className="px-4 pb-32 max-w-md mx-auto w-full space-y-6 pt-4">
-          {isDriverView ? (
-            <>
-              {requestRides.length > 0 && (
-                <section>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs font-black text-accent uppercase tracking-wider">🙋 Riders Looking</span>
-                    <span className="text-[10px] font-bold text-white bg-accent px-2 py-0.5 rounded-full">{requestRides.length}</span>
-                  </div>
-                  <div className="flex flex-col gap-4">{renderGrouped(requestRides)}</div>
-                </section>
-              )}
-              {offerRides.length > 0 && (
-                <section>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs font-black text-brand uppercase tracking-wider">🚗 Other Drivers</span>
-                    <span className="text-[10px] font-bold text-white bg-brand px-2 py-0.5 rounded-full">{offerRides.length}</span>
-                  </div>
-                  <div className="flex flex-col gap-4">{renderGrouped(offerRides)}</div>
-                </section>
-              )}
-            </>
-          ) : (
-            <>
-              {offerRides.length > 0 && (
-                <section>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs font-black text-brand uppercase tracking-wider">🚗 Available Rides</span>
-                    <span className="text-[10px] font-bold text-white bg-brand px-2 py-0.5 rounded-full">{offerRides.length}</span>
-                  </div>
-                  <div className="flex flex-col gap-4">{renderGrouped(offerRides)}</div>
-                </section>
-              )}
-              {requestRides.length > 0 && (
-                <section>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs font-black text-accent uppercase tracking-wider">🙋 Looking for a Ride</span>
-                    <span className="text-[10px] font-bold text-white bg-accent px-2 py-0.5 rounded-full">{requestRides.length}</span>
-                  </div>
-                  <div className="flex flex-col gap-4">{renderGrouped(requestRides)}</div>
-                </section>
-              )}
-            </>
-          )}
+          <p className="text-sm font-semibold text-neutral-700">
+            {mainTab === 'now' ? 'Nothing right now' : 'No rides posted yet'}
+          </p>
+          <p className="text-xs text-neutral-400">Be the first — tap + to post</p>
         </div>
       ) : (
-        <div className="px-4 py-4 flex flex-col gap-4 pb-32 max-w-md mx-auto w-full">
-          {renderGrouped(visible)}
+        <div className="px-4 pt-4 pb-32 max-w-md mx-auto w-full flex flex-col gap-2.5">
+          {visible.map((ride) => (
+            <RideCard key={ride.id} ride={ride} userId={userId} />
+          ))}
         </div>
       )}
 
@@ -280,18 +185,6 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
           RideSM is a free community board. Not affiliated with any organization. Use at your own risk.
         </p>
       </div>
-
-      {requestingRide && userId && (
-        <SeatRequestSheet
-          ride={requestingRide}
-          userId={userId}
-          onSuccess={(rideId) => {
-            setRequested((prev) => new Set([...prev, rideId]))
-            setRequestingRide(null)
-          }}
-          onClose={() => setRequestingRide(null)}
-        />
-      )}
     </div>
   )
 }
