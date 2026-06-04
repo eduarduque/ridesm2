@@ -1,13 +1,34 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
+
+const RATE_LIMIT_SECONDS = 60
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [cooldown, setCooldown] = useState(0)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+  }, [])
+
+  function startCooldown() {
+    setCooldown(RATE_LIMIT_SECONDS)
+    timerRef.current = setInterval(() => {
+      setCooldown((s) => {
+        if (s <= 1) {
+          clearInterval(timerRef.current!)
+          return 0
+        }
+        return s - 1
+      })
+    }, 1000)
+  }
 
   async function sendMagicLink() {
     setLoading(true)
@@ -20,11 +41,12 @@ export default function LoginPage() {
       },
     })
     if (error) {
-      setError(
-        error.message.toLowerCase().includes('rate limit')
-          ? 'Too many attempts — please wait a few minutes and try again.'
-          : error.message
-      )
+      if (error.message.toLowerCase().includes('rate limit')) {
+        setError('')
+        startCooldown()
+      } else {
+        setError(error.message)
+      }
     } else {
       setSent(true)
     }
@@ -63,17 +85,22 @@ export default function LoginPage() {
               placeholder="your@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') sendMagicLink() }}
+              onKeyDown={(e) => { if (e.key === 'Enter' && !cooldown) sendMagicLink() }}
               className="w-full border border-gray-300 rounded-xl px-4 py-3 text-base mb-4 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
               autoComplete="email"
             />
             {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+            {cooldown > 0 && (
+              <p className="text-amber-600 text-sm mb-4 text-center">
+                Too many attempts — try again in <strong>{cooldown}s</strong>
+              </p>
+            )}
             <button
               onClick={sendMagicLink}
-              disabled={loading || !email.trim()}
+              disabled={loading || !email.trim() || cooldown > 0}
               className="w-full bg-brand text-white font-semibold py-3 rounded-xl disabled:opacity-50"
             >
-              {loading ? 'Sending…' : 'Send magic link'}
+              {loading ? 'Sending…' : cooldown > 0 ? `Wait ${cooldown}s` : 'Send magic link'}
             </button>
             <p className="text-center text-xs text-gray-400 mt-4">
               We'll email you a link — no password needed.
