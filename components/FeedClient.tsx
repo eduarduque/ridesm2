@@ -132,15 +132,13 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
   const requestRides = visible.filter((r) => r.type === 'request')
   const openCount = visible.length
   const showSplit = typeFilter === 'all'
-  const showOffersSection = showSplit && devRole !== 'driver'
-  const showRequestsSection = showSplit && devRole !== 'customer'
 
   function renderCards(list: typeof visible) {
     return list.map((ride) => (
       <RideCard
         key={ride.id}
         ride={ride}
-        userId={devRole && devRole !== 'admin' ? 'simulated-other-user' : userId}
+        userId={userId}
         hasRequested={requested.has(ride.id) || requesting === ride.id}
         onRequest={handleRequest}
       />
@@ -218,7 +216,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
         </div>
       ) : showSplit ? (
         <div className="px-4 pb-32 max-w-md mx-auto w-full space-y-6 pt-4">
-          {showOffersSection && offerRides.length > 0 && (
+          {offerRides.length > 0 && (
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-xs font-black text-brand uppercase tracking-wider">🚗 Available Rides</span>
@@ -227,7 +225,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
               <div className="flex flex-col gap-3.5">{renderCards(offerRides)}</div>
             </section>
           )}
-          {showRequestsSection && requestRides.length > 0 && (
+          {requestRides.length > 0 && (
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-xs font-black text-accent uppercase tracking-wider">🙋 Looking for a Ride</span>
