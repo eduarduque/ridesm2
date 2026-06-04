@@ -73,11 +73,17 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
   const today = todayISO()
   const tomorrow = tomorrowISO()
 
-  // Urgent rides (is_now) always float to the top
+  // Sort: urgent first → soonest departure → TBD last
   const sorted = [...rides].sort((a, b) => {
     if (a.is_now && !b.is_now) return -1
     if (!a.is_now && b.is_now) return 1
-    return 0
+    if (a.is_now && b.is_now) return 0
+    if (!a.depart_date && !b.depart_date) return 0
+    if (!a.depart_date) return 1
+    if (!b.depart_date) return -1
+    const aKey = `${a.depart_date}T${a.depart_time_start ?? '23:59'}`
+    const bKey = `${b.depart_date}T${b.depart_time_start ?? '23:59'}`
+    return aKey.localeCompare(bKey)
   })
 
   const visible = sorted.filter((ride) => {
