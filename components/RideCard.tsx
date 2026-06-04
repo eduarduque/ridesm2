@@ -9,6 +9,7 @@ interface Props {
   userId: string | null
   hasRequested: boolean
   onRequest: (rideId: string) => void
+  devMode?: boolean
 }
 
 function statusLabel(ride: RideWithUser): { text: string; variant: 'open' | 'filling' | 'closed' } {
@@ -39,8 +40,8 @@ function SeatDots({ seats }: { seats: number }) {
   )
 }
 
-export default function RideCard({ ride, userId, hasRequested, onRequest }: Props) {
-  const isOwn = ride.user_id === userId
+export default function RideCard({ ride, userId, hasRequested, onRequest, devMode }: Props) {
+  const isOwn = !devMode && ride.user_id === userId
   const canAct = userId && !isOwn && (ride.status === 'open' || ride.status === 'filling')
   const isOffer = ride.type === 'offer'
   const isUrgent = ride.is_now

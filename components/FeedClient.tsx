@@ -133,6 +133,8 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
   const openCount = visible.length
   const showSplit = typeFilter === 'all'
 
+  const devMode = !!(devRole && devRole !== 'admin')
+
   function renderCards(list: typeof visible) {
     return list.map((ride) => (
       <RideCard
@@ -141,6 +143,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
         userId={userId}
         hasRequested={requested.has(ride.id) || requesting === ride.id}
         onRequest={handleRequest}
+        devMode={devMode}
       />
     ))
   }

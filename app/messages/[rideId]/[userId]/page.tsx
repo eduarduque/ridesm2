@@ -23,8 +23,6 @@ export default async function ChatPage({ params }: Props) {
     .single()
 
   if (!ride) notFound()
-  // Don't allow chatting with yourself
-  if (ride.user_id === user.id && otherUserId === user.id) redirect('/')
 
   // Fetch other user's profile
   const { data: otherUser } = await supabase
