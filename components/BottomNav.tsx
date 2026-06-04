@@ -103,7 +103,7 @@ export default function BottomNav() {
     init()
   }, [])
 
-  if (HIDDEN_ON.includes(pathname) || !loggedIn) return null
+  if (HIDDEN_ON.includes(pathname)) return null
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-20 flex items-center justify-around h-16">

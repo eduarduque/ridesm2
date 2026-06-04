@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Geist } from 'next/font/google'
 import './globals.css'
 import BottomNav from '@/components/BottomNav'
+import DisclaimerModal from '@/components/DisclaimerModal'
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar'
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="h-full bg-white text-gray-900 font-sans">
         <ServiceWorkerRegistrar />
+        <DisclaimerModal />
         <main className="pb-16 min-h-full">{children}</main>
         <BottomNav />
       </body>
