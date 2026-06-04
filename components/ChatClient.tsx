@@ -17,7 +17,16 @@ export default function ChatClient({ rideId, otherUser, currentUserId, initialMe
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [body, setBody] = useState('')
   const [sending, setSending] = useState(false)
+  const [devRole, setDevRole] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const saved = localStorage.getItem('devRole')
+    if (saved) setDevRole(saved)
+    function handle(e: Event) { setDevRole((e as CustomEvent).detail) }
+    window.addEventListener('devRoleChange', handle)
+    return () => window.removeEventListener('devRoleChange', handle)
+  }, [])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -86,6 +95,11 @@ export default function ChatClient({ rideId, otherUser, currentUserId, initialMe
       <div className="px-4 pt-6 pb-3.5 border-b border-neutral-100 bg-white">
         <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider mb-1">{rideLabel}</p>
         <h1 className="font-bold text-neutral-900 text-[15px]">{otherUser.name ?? 'Anonymous'}</h1>
+        {devRole && devRole !== 'admin' && (
+          <p className="text-[9px] text-neutral-400 mt-1 font-semibold">
+            {devRole === 'customer' ? '🔄 Viewing as Customer — messages flipped' : '🚗 Viewing as Driver'} · dev only
+          </p>
+        )}
       </div>
 
       {/* Messages */}
@@ -96,9 +110,11 @@ export default function ChatClient({ rideId, otherUser, currentUserId, initialMe
             <p className="text-neutral-400 font-normal mt-1">Say hello to coordinate details!</p>
           </div>
         )}
-        {messages.map((msg) => (
-          <ChatBubble key={msg.id} message={msg} isMe={msg.sender_id === currentUserId} />
-        ))}
+        {messages.map((msg) => {
+          const sentByMe = msg.sender_id === currentUserId
+          const isMe = devRole === 'customer' ? !sentByMe : sentByMe
+          return <ChatBubble key={msg.id} message={msg} isMe={isMe} />
+        })}
         <div ref={bottomRef} />
       </div>
 

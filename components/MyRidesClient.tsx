@@ -42,11 +42,30 @@ export default function MyRidesClient({ rides: initialRides, requests: initialRe
     setLoading(reqId)
     const supabase = createClient()
     await supabase.from('match_requests').update({ status }).eq('id', reqId)
-    setRequests((prev) =>
-      prev.map((r) => (r.id === reqId ? { ...r, status } : r))
-    )
+    setRequests((prev) => prev.map((r) => (r.id === reqId ? { ...r, status } : r)))
+
+    if (status === 'accepted') {
+      const req = requests.find((r) => r.id === reqId)
+      if (req?.ride_id) {
+        const currentRide = rides.find((r) => r.id === req.ride_id) ?? req.rides
+        const newSeats = Math.max(0, currentRide.seats - 1)
+        const newStatus = newSeats === 0 ? 'matched' : 'filling'
+        await supabase.from('rides').update({ seats: newSeats, status: newStatus }).eq('id', req.ride_id)
+        setRides((prev) =>
+          prev.map((r) => r.id === req.ride_id ? { ...r, seats: newSeats, status: newStatus } : r)
+        )
+      }
+      router.refresh()
+    }
     setLoading(null)
-    if (status === 'accepted') router.refresh()
+  }
+
+  async function markFull(rideId: string) {
+    setLoading(rideId)
+    const supabase = createClient()
+    await supabase.from('rides').update({ status: 'matched', seats: 0 }).eq('id', rideId)
+    setRides((prev) => prev.map((r) => r.id === rideId ? { ...r, status: 'matched', seats: 0 } : r))
+    setLoading(null)
   }
 
   const pendingCount = requests.filter((r) => r.status === 'pending').length
@@ -118,13 +137,22 @@ export default function MyRidesClient({ rides: initialRides, requests: initialRe
                 </p>
               )}
               {(ride.status === 'open' || ride.status === 'filling') && (
-                <button
-                  onClick={() => cancelRide(ride.id)}
-                  disabled={loading === ride.id}
-                  className="mt-3 text-xs text-red-600 font-semibold disabled:opacity-50 hover:underline cursor-pointer"
-                >
-                  {loading === ride.id ? 'Cancelling…' : 'Cancel ride'}
-                </button>
+                <div className="flex items-center gap-4 mt-3">
+                  <button
+                    onClick={() => cancelRide(ride.id)}
+                    disabled={loading === ride.id}
+                    className="text-xs text-red-600 font-semibold disabled:opacity-50 hover:underline cursor-pointer"
+                  >
+                    {loading === ride.id ? 'Updating…' : 'Cancel ride'}
+                  </button>
+                  <button
+                    onClick={() => markFull(ride.id)}
+                    disabled={loading === ride.id}
+                    className="text-xs text-amber-600 font-semibold disabled:opacity-50 hover:underline cursor-pointer"
+                  >
+                    Mark as Full
+                  </button>
+                </div>
               )}
             </div>
           ))}
