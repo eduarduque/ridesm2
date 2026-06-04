@@ -20,7 +20,11 @@ export default function LoginPage() {
       },
     })
     if (error) {
-      setError(error.message)
+      setError(
+        error.message.toLowerCase().includes('rate limit')
+          ? 'Too many attempts — please wait a few minutes and try again.'
+          : error.message
+      )
     } else {
       setSent(true)
     }
@@ -32,7 +36,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-brand">RideSM</h1>
-          <p className="text-gray-400 text-sm mt-1">Community carpool for TXST students</p>
+          <p className="text-gray-400 text-sm mt-1">Community carpool for San Marcos</p>
         </div>
 
         {sent ? (
@@ -56,7 +60,7 @@ export default function LoginPage() {
             </label>
             <input
               type="email"
-              placeholder="you@txstate.edu"
+              placeholder="your@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') sendMagicLink() }}

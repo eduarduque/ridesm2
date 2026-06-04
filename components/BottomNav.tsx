@@ -112,15 +112,15 @@ export default function BottomNav() {
         <span className={`text-[10px] ${pathname === '/' ? 'text-brand font-semibold' : 'text-gray-400'}`}>Feed</span>
       </Link>
 
-      <Link href="/post" className="flex flex-col items-center">
-        <div className="w-12 h-12 rounded-full bg-brand flex items-center justify-center shadow-md -mt-4">
-          <PlusIcon />
-        </div>
-      </Link>
-
       <Link href="/my-rides" className="flex flex-col items-center gap-0.5">
         <ListIcon active={pathname.startsWith('/my-rides')} />
         <span className={`text-[10px] ${pathname.startsWith('/my-rides') ? 'text-brand font-semibold' : 'text-gray-400'}`}>My Rides</span>
+      </Link>
+
+      <Link href="/post" className="flex flex-col items-center">
+        <div className="w-14 h-14 rounded-full bg-brand flex items-center justify-center shadow-lg -mt-6 border-4 border-white">
+          <PlusIcon />
+        </div>
       </Link>
 
       <Link href="/messages" className="flex flex-col items-center gap-0.5">
