@@ -23,29 +23,18 @@ function statusLabel(ride: RideWithUser): { text: string; variant: 'open' | 'fil
 function SeatDots({ seats }: { seats: number }) {
   const MAX = 4
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1.5">
       {Array.from({ length: MAX }).map((_, i) => (
         <div
           key={i}
-          className={`w-2.5 h-2.5 rounded-full border transition-colors ${
-            i < seats
-              ? 'bg-brand border-brand'
-              : 'bg-white border-neutral-300'
+          className={`w-3 h-3 rounded-full border-2 transition-colors ${
+            i < seats ? 'bg-brand border-brand' : 'bg-white border-neutral-300'
           }`}
         />
       ))}
-      <span className="text-[10px] text-neutral-500 font-medium ml-1">
+      <span className="text-xs text-neutral-500 font-semibold ml-1">
         {seats} spot{seats !== 1 ? 's' : ''} left
       </span>
-    </div>
-  )
-}
-
-function Avatar({ name, isOffer }: { name: string | null | undefined; isOffer: boolean }) {
-  const initial = (name ?? '?')[0].toUpperCase()
-  return (
-    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm ${isOffer ? 'bg-brand' : 'bg-accent'}`}>
-      {initial}
     </div>
   )
 }
@@ -59,183 +48,149 @@ export default function RideCard({ ride, userId, hasRequested, onRequest }: Prop
   const posterName = ride.users?.name ?? 'Anonymous'
   const phone = ride.users?.phone
 
-  const borderClass = isOffer
-    ? 'border-l-4 border-l-brand'
-    : 'border-l-4 border-l-accent'
-
-  const typeTagClass = isOffer
-    ? 'bg-brand-light text-brand'
-    : 'bg-accent-light text-accent'
-
+  const accentColor = isOffer ? 'border-l-brand' : 'border-l-accent'
+  const typeTagClass = isOffer ? 'bg-brand-light text-brand' : 'bg-accent-light text-accent'
   const statusTagClass =
-    status.variant === 'open'
-      ? 'bg-emerald-50 text-emerald-800'
-      : status.variant === 'filling'
-      ? 'bg-amber-50 text-amber-800'
-      : 'bg-neutral-100 text-neutral-600'
+    status.variant === 'open' ? 'bg-emerald-50 text-emerald-800' :
+    status.variant === 'filling' ? 'bg-amber-50 text-amber-800' :
+    'bg-neutral-100 text-neutral-600'
+
+  const departureLabel = isUrgent
+    ? '🔴 Right now — ASAP'
+    : ride.depart_date
+    ? formatDate(ride.depart_date, ride.depart_time_start)
+    : 'Date TBD'
 
   function renderAction() {
-    if (isOwn) {
-      return (
-        <div className="w-full text-center py-2.5 bg-neutral-100 text-neutral-500 text-xs font-semibold rounded-lg">
-          Your post
-        </div>
-      )
-    }
-    if (!userId) {
-      return (
-        <Link
-          href="/login"
-          className={`block w-full text-center py-2.5 rounded-lg text-xs font-bold text-white shadow-sm transition-colors cursor-pointer ${
-            isOffer ? 'bg-brand hover:bg-brand-dark' : 'bg-accent hover:bg-teal-700'
-          }`}
-        >
-          Sign in to respond
-        </Link>
-      )
-    }
-    if (ride.status === 'matched' || ride.status === 'expired' || ride.status === 'cancelled') {
-      return (
-        <div className="w-full text-center py-2.5 bg-neutral-100 text-neutral-400 text-xs font-semibold rounded-lg">
-          Closed
-        </div>
-      )
-    }
-    if (hasRequested) {
-      return (
-        <div className="w-full text-center py-2.5 bg-emerald-50 text-emerald-800 text-xs font-bold rounded-lg border border-emerald-200">
-          ✓ Request sent
-        </div>
-      )
-    }
-    if (!canAct) {
-      return (
-        <div className="w-full text-center py-2.5 bg-neutral-100 text-neutral-400 text-xs font-semibold rounded-lg">
-          Unavailable
-        </div>
-      )
-    }
-
-    if (!isOffer && phone) {
-      return (
-        <a
-          href={`tel:${phone}`}
-          className="block w-full text-center py-2.5 rounded-lg text-xs font-bold text-white bg-accent hover:bg-teal-700 transition-colors shadow-sm cursor-pointer"
-        >
-          Call Requestor
-        </a>
-      )
-    }
-
+    if (isOwn) return (
+      <div className="w-full text-center py-3 bg-neutral-100 text-neutral-500 text-sm font-semibold rounded-xl">
+        Your post
+      </div>
+    )
+    if (!userId) return (
+      <Link href="/login" className={`block w-full text-center py-3 rounded-xl text-sm font-bold text-white shadow-sm transition-colors ${isOffer ? 'bg-brand hover:bg-brand-dark' : 'bg-accent hover:bg-teal-700'}`}>
+        Sign in to respond
+      </Link>
+    )
+    if (ride.status === 'matched' || ride.status === 'expired' || ride.status === 'cancelled') return (
+      <div className="w-full text-center py-3 bg-neutral-100 text-neutral-400 text-sm font-semibold rounded-xl">
+        Closed
+      </div>
+    )
+    if (hasRequested) return (
+      <div className="w-full text-center py-3 bg-emerald-50 text-emerald-800 text-sm font-bold rounded-xl border border-emerald-200">
+        ✓ Request sent
+      </div>
+    )
+    if (!canAct) return (
+      <div className="w-full text-center py-3 bg-neutral-100 text-neutral-400 text-sm font-semibold rounded-xl">
+        Unavailable
+      </div>
+    )
+    if (!isOffer && phone) return (
+      <a href={`tel:${phone}`} className="block w-full text-center py-3 rounded-xl text-sm font-bold text-white bg-accent hover:bg-teal-700 transition-colors shadow-sm">
+        Call Requestor
+      </a>
+    )
     return (
       <button
         onClick={() => onRequest(ride.id)}
-        className={`w-full py-2.5 rounded-lg text-xs font-bold text-white shadow-sm transition-colors cursor-pointer ${
-          isOffer ? 'bg-brand hover:bg-brand-dark' : 'bg-accent hover:bg-teal-700'
-        }`}
+        className={`w-full py-3 rounded-xl text-sm font-bold text-white shadow-sm transition-colors ${isOffer ? 'bg-brand hover:bg-brand-dark' : 'bg-accent hover:bg-teal-700'}`}
       >
         {isOffer ? 'Join Ride' : "I'll Drive"}
       </button>
     )
   }
 
-  // Format departure label
-  const departureLabel = isUrgent
-    ? '🔴 ASAP (Urgent)'
-    : ride.depart_date
-    ? `${formatDate(ride.depart_date, ride.depart_time_start)}`
-    : 'TBD'
-
   return (
-    <div className={`bg-white border border-neutral-200/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between card-lift ${borderClass} ${isUrgent ? 'ring-1 ring-red-500/10' : ''}`}>
-      {/* Top Header Row */}
-      <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
-        <div className="flex items-center gap-2.5">
-          <Avatar name={posterName} isOffer={isOffer} />
-          <div className="text-xs font-bold text-neutral-950 leading-tight">{posterName}</div>
-        </div>
-        <div className="flex flex-col items-end gap-1.5">
-          <span className={`text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded ${typeTagClass}`}>
+    <div className={`bg-white border border-neutral-200/80 border-l-4 ${accentColor} rounded-xl overflow-hidden card-lift ${isUrgent ? 'ring-1 ring-red-400/20' : ''}`}>
+      <div className="p-4 space-y-3">
+
+        {/* Row 1: tiny type + status tags */}
+        <div className="flex items-center justify-between">
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${typeTagClass}`}>
             {isOffer ? 'Offering ride' : 'Requesting ride'}
           </span>
-          <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${statusTagClass}`}>
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${statusTagClass}`}>
             {status.text}
           </span>
         </div>
-      </div>
 
-      {/* Visual Timeline Details */}
-      <Link href={`/ride/${ride.id}`} className="block py-4 group cursor-pointer">
-        <div className="flex gap-4">
-          {/* Vertical timeline graphic */}
-          <div className="flex flex-col items-center justify-between py-1 shrink-0">
-            <div className={`w-2 h-2 rounded-full border-2 bg-white group-hover:bg-current transition-colors ${isOffer ? 'border-brand text-brand' : 'border-accent text-accent'}`} />
-            <div className="w-[1.5px] bg-neutral-300 grow my-1 min-h-[24px]" />
-            <div className={`w-2 h-2 rounded-sm ${isOffer ? 'bg-brand' : 'bg-accent'}`} />
-          </div>
-          {/* Route cities */}
-          <div className="flex flex-col justify-between grow py-0.5">
-            <div className="text-sm font-bold text-neutral-950 group-hover:text-black transition-colors leading-none">
-              {ride.from_city}
+        {/* Row 2: ROUTE — hero element */}
+        <Link href={`/ride/${ride.id}`} className="block group">
+          <div className="flex gap-3">
+            {/* Timeline graphic */}
+            <div className="flex flex-col items-center shrink-0 pt-1">
+              <div className={`w-2.5 h-2.5 rounded-full border-2 bg-white ${isOffer ? 'border-brand' : 'border-accent'}`} />
+              <div className="w-px bg-neutral-200 grow my-1.5 min-h-[20px]" />
+              <div className={`w-2.5 h-2.5 rounded-sm ${isOffer ? 'bg-brand' : 'bg-accent'}`} />
             </div>
-            <div className="h-4" />
-            <div className="text-sm font-bold text-neutral-950 group-hover:text-black transition-colors leading-none">
-              {ride.to_city}
+            {/* Cities — big and bold */}
+            <div className="flex flex-col justify-between gap-3">
+              <span className="text-lg font-extrabold text-neutral-950 leading-none group-hover:text-black">
+                {ride.from_city}
+              </span>
+              <span className="text-lg font-extrabold text-neutral-950 leading-none group-hover:text-black">
+                {ride.to_city}
+              </span>
             </div>
           </div>
+        </Link>
+
+        {/* Row 3: Date — prominent */}
+        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isUrgent ? 'bg-red-50' : 'bg-neutral-50'}`}>
+          <span className="text-base">🕒</span>
+          <span className={`text-sm font-bold ${isUrgent ? 'text-red-700' : 'text-neutral-800'}`}>
+            {departureLabel}
+          </span>
         </div>
 
-        {/* Details row */}
-        <div className="mt-3.5 space-y-1.5 text-xs text-neutral-600">
-          <div className="flex justify-between items-baseline">
-            <span className="text-neutral-500">Departure</span>
-            <span className="font-semibold text-neutral-900">{departureLabel}</span>
-          </div>
-          {isOffer && (
-            <div className="flex justify-between items-center">
-              <span className="text-neutral-500">Seats</span>
-              <SeatDots seats={ride.seats} />
-            </div>
-          )}
-          {ride.note && (
-            <p className="text-neutral-500 italic mt-2 text-[11px] line-clamp-2 leading-relaxed bg-neutral-50 p-2 rounded-lg border border-neutral-100/50">
-              &ldquo;{ride.note}&rdquo;
-            </p>
-          )}
-        </div>
+        {/* Row 4: Seats dots (offers only) */}
+        {isOffer && <SeatDots seats={ride.seats} />}
 
-        {/* Badges */}
+        {/* Row 5: Note */}
+        {ride.note && (
+          <p className="text-xs text-neutral-500 italic line-clamp-2 bg-neutral-50 px-3 py-2 rounded-lg border border-neutral-100">
+            &ldquo;{ride.note}&rdquo;
+          </p>
+        )}
+
+        {/* Row 6: Badges */}
         {(ride.is_recurring || ride.has_luggage_space) && (
-          <div className="flex flex-wrap gap-1.5 mt-3">
+          <div className="flex flex-wrap gap-1.5">
             {ride.is_recurring && (
-              <span className="text-[9px] font-bold bg-neutral-100 text-neutral-800 px-2 py-0.5 rounded">
-                🔄 Commute
+              <span className="text-[10px] font-bold bg-neutral-100 text-neutral-700 px-2 py-0.5 rounded-full">
+                🔄 Recurring
               </span>
             )}
             {ride.has_luggage_space && (
-              <span className="text-[9px] font-bold bg-neutral-100 text-neutral-800 px-2 py-0.5 rounded">
-                🧳 Luggage
+              <span className="text-[10px] font-bold bg-neutral-100 text-neutral-700 px-2 py-0.5 rounded-full">
+                🧳 Luggage OK
               </span>
             )}
           </div>
         )}
-      </Link>
 
-      {/* Button Actions */}
-      <div className="pt-2 border-t border-neutral-100 space-y-2.5">
+        {/* Row 7: Action button */}
         {renderAction()}
-        <div className="flex items-center justify-end px-0.5">
+
+        {/* Row 8: Footer — name is small context, not the point */}
+        <div className="flex items-center justify-between pt-1">
+          <div className="flex items-center gap-1.5">
+            <div className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold ${isOffer ? 'bg-brand' : 'bg-accent'}`}>
+              {posterName[0].toUpperCase()}
+            </div>
+            <span className="text-[11px] text-neutral-400 font-medium">{posterName}</span>
+          </div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-neutral-400">{timeAgo(ride.created_at)}</span>
             <span className="text-neutral-300">·</span>
-            <Link
-              href={`/ride/${ride.id}`}
-              className={`text-[10px] font-bold hover:underline ${isOffer ? 'text-brand' : 'text-accent'}`}
-            >
+            <Link href={`/ride/${ride.id}`} className={`text-[10px] font-bold hover:underline ${isOffer ? 'text-brand' : 'text-accent'}`}>
               Details →
             </Link>
           </div>
         </div>
+
       </div>
     </div>
   )
