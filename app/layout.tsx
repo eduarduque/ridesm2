@@ -4,6 +4,7 @@ import './globals.css'
 import BottomNav from '@/components/BottomNav'
 import DisclaimerModal from '@/components/DisclaimerModal'
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar'
+import DevRoleSwitcher from '@/components/DevRoleSwitcher'
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
 
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="h-full bg-background text-foreground font-sans antialiased">
         <ServiceWorkerRegistrar />
         <DisclaimerModal />
+        <DevRoleSwitcher />
         <main className="pb-24 min-h-full">{children}</main>
         <BottomNav />
       </body>
