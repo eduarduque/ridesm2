@@ -108,6 +108,13 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
 
   const visible = sorted.filter((ride) => {
     if (ride.status !== 'open' && ride.status !== 'filling') return false
+
+    // Client-side expiry: today's rides where the set departure time has passed
+    if (!ride.is_now && ride.depart_date === today && ride.depart_time_start) {
+      const departure = new Date(`${ride.depart_date}T${ride.depart_time_start}`)
+      if (departure < new Date()) return false
+    }
+
     if (typeFilter !== 'all' && ride.type !== typeFilter) return false
     if (luggageFilter && !ride.has_luggage_space) return false
     if (commutesFilter && !ride.is_recurring) return false
