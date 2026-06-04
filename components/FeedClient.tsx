@@ -7,7 +7,7 @@ import type { RideWithUser } from '@/lib/types'
 import FilterChips from './FilterChips'
 import RideCard from './RideCard'
 import SeatRequestSheet from './SeatRequestSheet'
-import { todayISO, tomorrowISO } from '@/lib/utils'
+import { todayISO, tomorrowISO, groupByTime } from '@/lib/utils'
 
 interface Props {
   initialRides: RideWithUser[]
@@ -125,8 +125,8 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
   const devMode = !!(devRole && devRole !== 'admin')
   const isDriverView = devRole === 'driver'
 
-  function renderCards(list: typeof visible) {
-    return list.map((ride) => (
+  function renderCard(ride: RideWithUser) {
+    return (
       <RideCard
         key={ride.id}
         ride={ride}
@@ -136,6 +136,21 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
         devMode={devMode}
         devRole={devRole ?? undefined}
       />
+    )
+  }
+
+  function renderGrouped(list: typeof visible) {
+    const groups = groupByTime(list)
+    return groups.map((group) => (
+      <div key={group.key}>
+        <div className="flex items-center gap-2 mb-2 mt-1">
+          <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">{group.label}</span>
+          <div className="flex-1 h-px bg-neutral-200/70" />
+        </div>
+        <div className="flex flex-col gap-2.5">
+          {group.rides.map(renderCard)}
+        </div>
+      </div>
     ))
   }
 
@@ -218,7 +233,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
                     <span className="text-xs font-black text-accent uppercase tracking-wider">🙋 Riders Looking</span>
                     <span className="text-[10px] font-bold text-white bg-accent px-2 py-0.5 rounded-full">{requestRides.length}</span>
                   </div>
-                  <div className="flex flex-col gap-2.5">{renderCards(requestRides)}</div>
+                  <div className="flex flex-col gap-4">{renderGrouped(requestRides)}</div>
                 </section>
               )}
               {offerRides.length > 0 && (
@@ -227,7 +242,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
                     <span className="text-xs font-black text-brand uppercase tracking-wider">🚗 Other Drivers</span>
                     <span className="text-[10px] font-bold text-white bg-brand px-2 py-0.5 rounded-full">{offerRides.length}</span>
                   </div>
-                  <div className="flex flex-col gap-2.5">{renderCards(offerRides)}</div>
+                  <div className="flex flex-col gap-4">{renderGrouped(offerRides)}</div>
                 </section>
               )}
             </>
@@ -239,7 +254,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
                     <span className="text-xs font-black text-brand uppercase tracking-wider">🚗 Available Rides</span>
                     <span className="text-[10px] font-bold text-white bg-brand px-2 py-0.5 rounded-full">{offerRides.length}</span>
                   </div>
-                  <div className="flex flex-col gap-2.5">{renderCards(offerRides)}</div>
+                  <div className="flex flex-col gap-4">{renderGrouped(offerRides)}</div>
                 </section>
               )}
               {requestRides.length > 0 && (
@@ -248,15 +263,15 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
                     <span className="text-xs font-black text-accent uppercase tracking-wider">🙋 Looking for a Ride</span>
                     <span className="text-[10px] font-bold text-white bg-accent px-2 py-0.5 rounded-full">{requestRides.length}</span>
                   </div>
-                  <div className="flex flex-col gap-2.5">{renderCards(requestRides)}</div>
+                  <div className="flex flex-col gap-4">{renderGrouped(requestRides)}</div>
                 </section>
               )}
             </>
           )}
         </div>
       ) : (
-        <div className="px-4 py-4 flex flex-col gap-3.5 pb-32 max-w-md mx-auto w-full">
-          {renderCards(visible)}
+        <div className="px-4 py-4 flex flex-col gap-4 pb-32 max-w-md mx-auto w-full">
+          {renderGrouped(visible)}
         </div>
       )}
 

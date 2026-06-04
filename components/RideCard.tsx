@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import type { RideWithUser } from '@/lib/types'
-import { formatDate, timeAgo } from '@/lib/utils'
+import { formatTime, formatDayLabel, timeAgo } from '@/lib/utils'
 
 interface Props {
   ride: RideWithUser
@@ -56,11 +56,12 @@ export default function RideCard({ ride, userId, hasRequested, onRequestSeats, d
     status.variant === 'filling' ? 'bg-amber-50 text-amber-800' :
     'bg-neutral-100 text-neutral-600'
 
-  const departureLabel = isUrgent
-    ? '🔴 Right now — ASAP'
-    : ride.depart_date
-    ? formatDate(ride.depart_date, ride.depart_time_start)
-    : 'Date TBD'
+  const timeLabel = isUrgent
+    ? 'Now'
+    : ride.depart_time_start ? formatTime(ride.depart_time_start) : 'TBD'
+  const dayLabel = isUrgent
+    ? 'Right away'
+    : ride.depart_date ? formatDayLabel(ride.depart_date) : 'Date TBD'
 
   function renderAction() {
     if (isOwn) return (
@@ -134,35 +135,43 @@ export default function RideCard({ ride, userId, hasRequested, onRequestSeats, d
           </span>
         </div>
 
-        {/* Row 2: ROUTE */}
+        {/* Row 2: ROUTE + TIME side by side */}
         <Link href={`/ride/${ride.id}`} className="block group">
-          <div className="flex gap-2">
-            <div className="flex flex-col items-center shrink-0 pt-0.5">
-              <div className={`w-2 h-2 rounded-full border-2 bg-white ${isOffer ? 'border-brand' : 'border-accent'}`} />
-              <div className="w-px bg-neutral-200 grow my-1 min-h-[12px]" />
-              <div className={`w-2 h-2 rounded-sm ${isOffer ? 'bg-brand' : 'bg-accent'}`} />
+          <div className="flex items-stretch gap-2">
+            {/* Timeline + cities */}
+            <div className="flex gap-2 flex-1 min-w-0">
+              <div className="flex flex-col items-center shrink-0 pt-0.5">
+                <div className={`w-2 h-2 rounded-full border-2 bg-white ${isOffer ? 'border-brand' : 'border-accent'}`} />
+                <div className="w-px bg-neutral-200 grow my-1 min-h-[12px]" />
+                <div className={`w-2 h-2 rounded-sm ${isOffer ? 'bg-brand' : 'bg-accent'}`} />
+              </div>
+              <div className="flex flex-col justify-between gap-2 min-w-0">
+                <span className="text-base font-extrabold text-neutral-950 leading-none group-hover:text-black truncate">
+                  {ride.from_city}
+                </span>
+                <span className="text-base font-extrabold text-neutral-950 leading-none group-hover:text-black truncate">
+                  {ride.to_city}
+                </span>
+              </div>
             </div>
-            <div className="flex flex-col justify-between gap-2">
-              <span className="text-base font-extrabold text-neutral-950 leading-none group-hover:text-black">
-                {ride.from_city}
+            {/* Time — same visual weight */}
+            <div className={`flex flex-col items-end justify-between shrink-0 pl-2 border-l ${isUrgent ? 'border-red-200' : 'border-neutral-100'}`}>
+              <span className={`text-base font-extrabold leading-none ${isUrgent ? 'text-red-600' : isOffer ? 'text-brand' : 'text-accent'}`}>
+                {timeLabel}
               </span>
-              <span className="text-base font-extrabold text-neutral-950 leading-none group-hover:text-black">
-                {ride.to_city}
+              <span className="text-[11px] font-semibold text-neutral-400 leading-none">
+                {dayLabel}
               </span>
             </div>
           </div>
         </Link>
 
-        {/* Row 3: Date + seats inline */}
-        <div className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg ${isUrgent ? 'bg-red-50' : 'bg-neutral-50'}`}>
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm">🕒</span>
-            <span className={`text-xs font-bold ${isUrgent ? 'text-red-700' : 'text-neutral-800'}`}>
-              {departureLabel}
-            </span>
+        {/* Row 3: Seats (offers only) */}
+        {isOffer && (
+          <div className="flex justify-end">
+            <SeatDots seats={ride.seats} />
           </div>
-          {isOffer && <SeatDots seats={ride.seats} />}
-        </div>
+        )}
 
         {/* Row 4: Note (if any) */}
         {ride.note && (

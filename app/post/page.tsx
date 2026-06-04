@@ -39,6 +39,7 @@ export default function PostPage() {
     if (toCity === 'Other' && !toCityCustom.trim()) { setError('Please specify the "To" city.'); return }
     if (isRecurring && recurringDays.length === 0) { setError('Please select at least one day for the recurring ride.'); return }
     if (whenOption === 'pick' && !pickDate) { setError('Please pick a date.'); return }
+    if (whenOption !== 'now' && !pickTime) { setError('Please add a departure time.'); return }
     if (needsTerms && !agreedTerms) { setError('Please agree to the terms to post.'); return }
 
     setLoading(true)
@@ -208,6 +209,19 @@ export default function PostPage() {
                 value={pickTime}
                 onChange={(e) => setPickTime(e.target.value)}
                 className="border border-neutral-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+            </div>
+          )}
+          {(whenOption === 'today' || whenOption === 'tomorrow') && (
+            <div className="mt-3">
+              <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1.5">
+                Departure time <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="time"
+                value={pickTime}
+                onChange={(e) => setPickTime(e.target.value)}
+                className="w-full border border-neutral-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
           )}
