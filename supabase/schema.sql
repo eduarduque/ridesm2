@@ -7,7 +7,7 @@
 
 CREATE TABLE IF NOT EXISTS public.users (
   id UUID PRIMARY KEY,            -- matches auth.users.id
-  phone TEXT UNIQUE NOT NULL,
+  phone TEXT UNIQUE,
   name TEXT,
   rating NUMERIC(2,1) DEFAULT 5.0,
   ride_count INTEGER DEFAULT 0,
