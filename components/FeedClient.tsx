@@ -229,7 +229,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
                     <span className="text-xs font-black text-accent uppercase tracking-wider">🙋 Riders Looking</span>
                     <span className="text-[10px] font-bold text-white bg-accent px-2 py-0.5 rounded-full">{requestRides.length}</span>
                   </div>
-                  <div className="flex flex-col gap-3.5">{renderCards(requestRides)}</div>
+                  <div className="flex flex-col gap-2.5">{renderCards(requestRides)}</div>
                 </section>
               )}
               {offerRides.length > 0 && (
@@ -238,7 +238,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
                     <span className="text-xs font-black text-brand uppercase tracking-wider">🚗 Other Drivers</span>
                     <span className="text-[10px] font-bold text-white bg-brand px-2 py-0.5 rounded-full">{offerRides.length}</span>
                   </div>
-                  <div className="flex flex-col gap-3.5">{renderCards(offerRides)}</div>
+                  <div className="flex flex-col gap-2.5">{renderCards(offerRides)}</div>
                 </section>
               )}
             </>
@@ -250,7 +250,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
                     <span className="text-xs font-black text-brand uppercase tracking-wider">🚗 Available Rides</span>
                     <span className="text-[10px] font-bold text-white bg-brand px-2 py-0.5 rounded-full">{offerRides.length}</span>
                   </div>
-                  <div className="flex flex-col gap-3.5">{renderCards(offerRides)}</div>
+                  <div className="flex flex-col gap-2.5">{renderCards(offerRides)}</div>
                 </section>
               )}
               {requestRides.length > 0 && (
@@ -259,7 +259,7 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
                     <span className="text-xs font-black text-accent uppercase tracking-wider">🙋 Looking for a Ride</span>
                     <span className="text-[10px] font-bold text-white bg-accent px-2 py-0.5 rounded-full">{requestRides.length}</span>
                   </div>
-                  <div className="flex flex-col gap-3.5">{renderCards(requestRides)}</div>
+                  <div className="flex flex-col gap-2.5">{renderCards(requestRides)}</div>
                 </section>
               )}
             </>
