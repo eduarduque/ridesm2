@@ -73,7 +73,6 @@ export default function FilterChips({
           onLuggageChange(false)
           onCommutesChange(false)
         }} />
-        <Chip label="Offers" active={typeFilter === 'offer'} onClick={() => onTypeChange('offer')} />
         <Chip label="Requests" active={typeFilter === 'request'} onClick={() => onTypeChange('request')} />
         <Chip label="Urgent ASAP" active={timeFilter === 'urgent'} onClick={() => onTimeChange('urgent')} urgent />
         <Chip label="Today" active={timeFilter === 'today'} onClick={() => onTimeChange('today')} />
