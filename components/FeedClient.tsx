@@ -124,7 +124,22 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
     return true
   })
 
+  const offerRides = visible.filter((r) => r.type === 'offer')
+  const requestRides = visible.filter((r) => r.type === 'request')
   const openCount = visible.length
+  const showSplit = typeFilter === 'all'
+
+  function renderCards(list: typeof visible) {
+    return list.map((ride) => (
+      <RideCard
+        key={ride.id}
+        ride={ride}
+        userId={devRole && devRole !== 'admin' ? 'simulated-other-user' : userId}
+        hasRequested={requested.has(ride.id) || requesting === ride.id}
+        onRequest={handleRequest}
+      />
+    ))
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-neutral-50">
@@ -195,17 +210,30 @@ export default function FeedClient({ initialRides, userId, requestedRideIds }: P
           <p className="text-sm font-semibold text-neutral-700">No rides match your filters</p>
           <p className="text-xs text-neutral-400">Be the first — tap Post to share a ride</p>
         </div>
+      ) : showSplit ? (
+        <div className="px-4 pb-32 max-w-md mx-auto w-full space-y-6 pt-4">
+          {offerRides.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs font-black text-brand uppercase tracking-wider">🚗 Available Rides</span>
+                <span className="text-[10px] font-bold text-white bg-brand px-2 py-0.5 rounded-full">{offerRides.length}</span>
+              </div>
+              <div className="flex flex-col gap-3.5">{renderCards(offerRides)}</div>
+            </section>
+          )}
+          {requestRides.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs font-black text-accent uppercase tracking-wider">🙋 Looking for a Ride</span>
+                <span className="text-[10px] font-bold text-white bg-accent px-2 py-0.5 rounded-full">{requestRides.length}</span>
+              </div>
+              <div className="flex flex-col gap-3.5">{renderCards(requestRides)}</div>
+            </section>
+          )}
+        </div>
       ) : (
         <div className="px-4 py-4 flex flex-col gap-3.5 pb-32 max-w-md mx-auto w-full">
-          {visible.map((ride) => (
-            <RideCard
-              key={ride.id}
-              ride={ride}
-              userId={devRole && devRole !== 'admin' ? 'simulated-other-user' : userId}
-              hasRequested={requested.has(ride.id) || requesting === ride.id}
-              onRequest={handleRequest}
-            />
-          ))}
+          {renderCards(visible)}
         </div>
       )}
 
