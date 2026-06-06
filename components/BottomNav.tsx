@@ -52,10 +52,10 @@ function NavItem({
   return (
     <Link href={href} className="flex flex-col items-center gap-1 min-w-[56px] py-1.5">
       {icon}
-      <span className={`text-[10px] font-medium tracking-tight ${active ? 'text-brand font-semibold' : 'text-neutral-400'}`}>
+      <span className={`text-[10px] tracking-tight ${active ? 'text-brand font-bold' : 'text-neutral-400 font-medium'}`}>
         {label}
       </span>
-      {active && <span className="w-1 h-1 rounded-full bg-brand -mt-0.5" />}
+      {active && <span className="w-1.5 h-1.5 rounded-full bg-brand -mt-0.5" />}
     </Link>
   )
 }
@@ -66,7 +66,7 @@ export default function BottomNav() {
   if (HIDDEN_ON.includes(pathname)) return null
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-neutral-200/50 pb-safe shadow-lg shadow-black/5">
+    <nav className="fixed bottom-0 left-0 right-0 z-20 bg-surface border-t border-neutral-200 pb-safe shadow-[0_-4px_24px_rgba(10,10,10,0.06)]">
       <div className="flex items-center justify-around h-[64px] px-2 max-w-md mx-auto">
         <NavItem
           href="/"
@@ -82,11 +82,11 @@ export default function BottomNav() {
           icon={<ListIcon active={pathname.startsWith('/my-rides')} />}
         />
 
-        <Link href="/post" className="flex flex-col items-center justify-center -mt-4">
-          <div className="w-[42px] h-[42px] rounded-full bg-brand flex items-center justify-center shadow-md hover:bg-brand-dark transition-colors">
+        <Link href="/post" className="flex flex-col items-center justify-center -mt-5">
+          <div className="w-[48px] h-[48px] rounded-2xl bg-brand flex items-center justify-center shadow-pop hover:bg-brand-dark transition-colors">
             <PlusIcon />
           </div>
-          <span className="text-[10px] font-medium text-neutral-400 mt-1">Post</span>
+          <span className="text-[10px] font-bold text-neutral-400 mt-1.5">Post</span>
         </Link>
 
         <NavItem

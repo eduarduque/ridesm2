@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f7f8fa;
-  --foreground: #0f172a;
+  --background: #f4f4f1;
+  --foreground: #0a0a0a;
   --surface: #ffffff;
-  --brand: #312e81;
-  --brand-dark: #1e1b4b;
-  --brand-light: #eef2ff;
-  --accent: #0d9488;
-  --accent-light: #f0fdfa;
-  --offer: #312e81;
-  --offer-light: #eef2ff;
-  --request: #0d9488;
-  --request-light: #f0fdfa;
-  --urgent: #e11900;
-  --urgent-light: #ffebe9;
+  --brand: #2347ff;
+  --brand-dark: #1a35cc;
+  --brand-light: #e9ecff;
+  --accent: #00b37e;
+  --accent-light: #e3f9f1;
+  --offer: #2347ff;
+  --offer-light: #e9ecff;
+  --request: #00b37e;
+  --request-light: #e3f9f1;
+  --urgent: #ff2d2d;
+  --urgent-light: #ffe7e7;
 }
 
 @theme inline {
@@ -48,12 +48,16 @@ body {
 }
 
 .card-lift {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 2px 8px rgba(0, 0, 0, 0.03);
-  transition: transform 0.15s ease, border-color 0.15s ease;
+  box-shadow: 0 1px 2px rgba(10, 10, 10, 0.04), 0 4px 16px rgba(10, 10, 10, 0.04);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .card-lift:active {
   transform: scale(0.99);
+}
+
+.shadow-pop {
+  box-shadow: 4px 4px 0 0 var(--foreground);
 }
 
 .pb-safe {

@@ -98,50 +98,57 @@ export default function FeedClient({ initialRides, userId }: Props) {
   ]
 
   return (
-    <div className="flex flex-col min-h-screen bg-neutral-50">
+    <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white border-b border-neutral-200/50">
-        <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="bg-foreground text-background">
+        <div className="max-w-md mx-auto px-5 pt-6 pb-5 flex items-end justify-between">
           <div>
-            <h1 className="text-xl font-extrabold tracking-tight text-brand">RideSM</h1>
-            <p className="text-[10px] text-neutral-500 font-semibold mt-0.5">Community Carpool Board</p>
+            <h1 className="text-3xl font-black tracking-tighter leading-none">
+              Ride<span className="text-brand">SM</span>
+            </h1>
+            <p className="text-[11px] text-background/50 font-semibold mt-1.5 uppercase tracking-widest">
+              Community Carpool Board
+            </p>
           </div>
           <div className="flex items-center gap-2">
             {nowCount > 0 && (
-              <span className="text-[9px] font-black text-white bg-red-500 px-2.5 py-1 rounded-full uppercase tracking-wider animate-pulse">
+              <span className="flex items-center gap-1.5 text-[10px] font-black text-background bg-urgent px-2.5 py-1.5 rounded-full uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-background animate-pulse" />
                 {nowCount} now
               </span>
             )}
             <Link
               href="/feedback"
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-neutral-200 text-[10px] font-semibold text-neutral-500 hover:border-brand hover:text-brand transition-colors"
+              className="flex items-center justify-center w-9 h-9 rounded-full border border-background/20 text-background/70 hover:bg-background/10 transition-colors"
+              aria-label="Send feedback"
             >
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.068.157 2.148.279 3.238.364.466.037.893.281 1.153.671L12 21l2.652-3.978c.26-.39.687-.634 1.153-.67 1.09-.086 2.17-.208 3.238-.365 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
               </svg>
-              Feedback
             </Link>
           </div>
         </div>
 
         {/* Main tabs */}
-        <div className="flex max-w-md mx-auto px-4 gap-0 border-t border-neutral-100">
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setMainTab(tab.key)}
-              className={`flex-1 py-2.5 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
-                mainTab === tab.key
-                  ? 'border-brand text-brand'
-                  : 'border-transparent text-neutral-400 hover:text-neutral-600'
-              }`}
-            >
-              {tab.label}
-              {tab.key === 'now' && nowCount > 0 && (
-                <span className="ml-1 bg-red-500 text-white text-[8px] font-black px-1 py-0.5 rounded-full">{nowCount}</span>
-              )}
-            </button>
-          ))}
+        <div className="max-w-md mx-auto px-5 pb-5">
+          <div className="flex gap-1 p-1 rounded-full bg-background/10">
+            {TABS.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setMainTab(tab.key)}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[13px] font-bold rounded-full transition-all duration-150 cursor-pointer ${
+                  mainTab === tab.key
+                    ? 'bg-background text-foreground'
+                    : 'text-background/60 hover:text-background'
+                }`}
+              >
+                {tab.label}
+                {tab.key === 'now' && nowCount > 0 && (
+                  <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${mainTab === tab.key ? 'bg-urgent text-background' : 'bg-urgent text-background'}`}>{nowCount}</span>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
@@ -164,16 +171,16 @@ export default function FeedClient({ initialRides, userId }: Props) {
       {/* Cards */}
       {visible.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-3 text-neutral-400 pb-24 px-6 mt-10">
-          <div className="w-16 h-16 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-3xl shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-surface border-2 border-foreground flex items-center justify-center text-3xl shadow-pop">
             {mainTab === 'now' ? '⚡' : mainTab === 'offering' ? '🚗' : '🙋'}
           </div>
-          <p className="text-sm font-semibold text-neutral-700">
+          <p className="text-base font-extrabold text-foreground">
             {mainTab === 'now' ? 'Nothing right now' : 'No rides posted yet'}
           </p>
-          <p className="text-xs text-neutral-400">Be the first — tap + to post</p>
+          <p className="text-xs text-neutral-400 font-medium">Be the first — tap + to post</p>
         </div>
       ) : (
-        <div className="px-4 pt-4 pb-32 max-w-md mx-auto w-full flex flex-col gap-2.5">
+        <div className="px-4 pt-4 pb-32 max-w-md mx-auto w-full flex flex-col gap-3">
           {visible.map((ride) => (
             <RideCard key={ride.id} ride={ride} userId={userId} />
           ))}
@@ -181,7 +188,7 @@ export default function FeedClient({ initialRides, userId }: Props) {
       )}
 
       <div className="max-w-md mx-auto w-full pb-8">
-        <p className="text-center text-[10px] text-neutral-400 px-6">
+        <p className="text-center text-[10px] text-neutral-400 px-6 font-medium">
           RideSM is a free community board. Not affiliated with any organization. Use at your own risk.
         </p>
       </div>
